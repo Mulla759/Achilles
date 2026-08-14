@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "pagecast": {
+      "command": "npx",
+      "args": ["-y", "@mcpware/pagecast"]
+    },
+    "pdfspark": {
+      "command": "npx",
+      "args": ["-y", "pdfspark-mcp"]
+    }
+  }
+}

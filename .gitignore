@@ -1,0 +1,58 @@
+# ---------- secrets ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.vercel
+
+# ---------- personal data ----------
+# Your real resume carries your phone number, email, and full work history.
+# It lives on disk and never enters git; `profiles/example.json` is the only
+# committed profile and it is a fictional student.
+profiles/*.json
+!profiles/example.json
+resume.typ
+resume.pdf
+resume.txt
+# Reference resumes used for local testing — real PDFs with real contact details.
+resume/
+out/
+*_tailored.typ
+*_tailored.pdf
+jd.txt
+jd/
+
+
+# ---------- python ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+dist/
+build/
+
+# ---------- node ----------
+node_modules/
+.next/
+out-next/
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# ---------- editors / os ----------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# ---------- scratch ----------
+scratch/
+tmp/
+*.log

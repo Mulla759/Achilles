@@ -1,0 +1,99 @@
+{
+  "contact": {
+    "name": "Jordan Rivera",
+    "phone": "(555) 014-2288",
+    "email": "jordan.rivera@example.edu",
+    "linkedin": "linkedin.com/in/jordan-rivera-example",
+    "github": "github.com/jordanrivera-example"
+  },
+  "target_role": "Product Manager Intern",
+  "availability": "May 2027 – Aug 2027 (flexible)",
+  "education": [
+    {
+      "role": "B.S. Computer Science & Statistics",
+      "org": "State University",
+      "date": "Expected May 2027",
+      "location": "Columbus, OH",
+      "stack": "",
+      "bullets": [
+        "Coursework: Data Structures & Algorithms, Machine Learning, Database Systems, Applied Regression, Human-Computer Interaction."
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "label": "Product & Analytics",
+      "items": "Metrics definition (activation, retention, resolution rate), A/B testing, experimentation, user research, roadmapping, SQL, Tableau"
+    },
+    {
+      "label": "AI / LLM",
+      "items": "LLM applications, prompt engineering, RAG, tool calling, evaluation design, scikit-learn"
+    },
+    {
+      "label": "Engineering",
+      "items": "Python, SQL, TypeScript, Java · React / Next.js, FastAPI, Node.js · Git, Docker, AWS, REST APIs"
+    }
+  ],
+  "experience": [
+    {
+      "role": "Product Management Intern",
+      "org": "Meridian Logistics",
+      "date": "Jun 2026 – Aug 2026",
+      "location": "Columbus, OH",
+      "stack": "User research · SQL · A/B testing · Roadmapping",
+      "bullets": [
+        "Ran 14 discovery interviews with warehouse leads, turning recurring pain points into a prioritized backlog that reset the Q3 roadmap.",
+        "Defined the activation metric for a new driver app and shipped an A/B test across 400+ drivers, lifting week-one activation ~18%.",
+        "Wrote the spec for a shipment-exception queue that cut average triage time from ~25 min to under 8 min."
+      ]
+    },
+    {
+      "role": "Data Analyst Intern",
+      "org": "Brightpath Nonprofit Partners",
+      "date": "May 2025 – Aug 2025",
+      "location": "Remote",
+      "stack": "Python · SQL · Tableau · ETL",
+      "bullets": [
+        "Built a Python/SQL ETL pipeline over 12K donor records, cutting a two-day manual report to under 30 minutes.",
+        "Shipped a Tableau dashboard adopted by all 9 regional teams to target outreach, guiding 20+ campaigns."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "role": "StudyLoop — Spaced-Repetition Study Assistant",
+      "org": "Product & Engineering",
+      "date": "2026",
+      "location": "Next.js · FastAPI · Postgres",
+      "stack": "",
+      "bullets": [
+        "Built a study planner that generates review schedules from a synced course calendar; grew to 320 weekly active students in one term.",
+        "Cut median question-generation latency ~55% with an embedding cache, holding p95 under 900 ms."
+      ]
+    },
+    {
+      "role": "CiteCheck — RAG Assistant over Course Readings",
+      "org": "Product & Engineering",
+      "date": "2025",
+      "location": "Python · FAISS · FastAPI · Docker",
+      "stack": "",
+      "bullets": [
+        "Shipped a Dockerized RAG assistant that answers questions over 600+ pages of course PDFs with grounded, cited passages.",
+        "Tuned chunking across 4 configurations on a 80-question eval set, lifting retrieval recall ~22%."
+      ]
+    }
+  ],
+  "leadership": [
+    {
+      "role": "Vice President",
+      "org": "Product Management Club",
+      "date": "Sep 2025 – Present",
+      "location": "Columbus, OH",
+      "stack": "",
+      "bullets": [
+        "Lead programming for 120+ members, converting post-event surveys into a prioritized calendar of workshops.",
+        "Ran 5 workshops and sourced 6 industry speakers, lifting average event turnout ~45%."
+      ]
+    }
+  ]
+}

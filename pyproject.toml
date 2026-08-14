@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "achilles"
+version = "0.1.0"
+description = "Turn a job description plus your old resume into a tailored, one-page, ATS-clean PDF."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+dependencies = [
+    "anthropic>=0.69,<1.0",
+    "typst>=0.13,<1.0",
+    "pypdf>=5.1,<7.0",
+    "pydantic>=2.9,<3.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.scripts]
+achilles = "achilles.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["achilles"]
+artifacts = ["templates/*.typ"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# These are data tables, not logic: the keyword ontology and the rubric's verb
+# sets / threshold comments read better as wide rows than as wrapped ones.
+"achilles/keywords.py" = ["E501"]
+"achilles/rubric.py" = ["E501"]
+"tests/*" = ["E501"]
