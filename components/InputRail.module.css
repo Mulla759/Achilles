@@ -1,0 +1,60 @@
+/* ==========================================================================
+   InputRail — the left column
+   --------------------------------------------------------------------------
+   A stack of sheets with generous air between them. Nothing here is boxed in
+   a scroller: the page scrolls as one document.
+   ========================================================================== */
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.detailsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 560px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hint {
+  align-self: center;
+  font-size: 11px;
+  color: var(--ink-3);
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.actions > :first-child {
+  flex: 2 1 12rem;
+}
+
+.actions > :last-child {
+  flex: 1 1 9rem;
+}
+
+/* The shortcut rides inside the button in the quieter of the two inks the
+   button already uses, so it reads as a footnote to the label. */
+.shortcut {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+}

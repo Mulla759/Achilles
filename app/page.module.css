@@ -1,0 +1,128 @@
+/* ==========================================================================
+   The page — an editorial workspace
+   --------------------------------------------------------------------------
+   Two columns on desktop: the form you fill in on the left, the marked-up
+   proof on the right. One column under 900px. The page scrolls as a single
+   document rather than as two independently scrolling panes — that is the
+   whole difference between reading a paper and operating a dashboard.
+   ========================================================================== */
+
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.body {
+  flex: 1;
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 28px 24px 44px;
+  display: grid;
+  grid-template-columns: minmax(340px, 460px) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.leftCol,
+.rightCol {
+  min-width: 0;
+}
+
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* --- the run panel ------------------------------------------------------ */
+
+.stopped {
+  font-size: 11px;
+  color: var(--del);
+}
+
+/* ThinkingTrace draws its marks with a ground colour so the hairline breaks at
+   each glyph; inside a card that ground is the card, not the page. */
+.trace {
+  --trace-ground: var(--surface);
+  padding-top: 2px;
+}
+
+.honesty {
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.scanning {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+
+/* --- the empty review column -------------------------------------------- */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 60ch;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.emptyLine {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--ink-2);
+}
+
+.emptyLine kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-ctl);
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-size: 11px;
+}
+
+.emptyStages {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.emptyStages li {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.emptyStageNum {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}
+
+@media (max-width: 900px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    padding: 20px 16px 36px;
+  }
+}

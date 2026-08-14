@@ -1,0 +1,125 @@
+/* ==========================================================================
+   HelpOverlay
+   --------------------------------------------------------------------------
+   A card laid on top of the page over --scrim: in light that is a wash of ink,
+   so the page underneath still reads as paper in shadow; in dark it is black,
+   because a scrim mixed off --ink would invert with the theme and BRIGHTEN the
+   page it covers — a pale veil over the viewport, i.e. the glassmorphism rule 3
+   forbids. That is why --scrim is a per-theme token in globals.css and not a
+   color-mix() on --ink here.
+   ========================================================================== */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* The click-outside target. A full-bleed button behind the dialog, so the
+   dismissal has a role and a name instead of being a bare div handler. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  background: var(--scrim);
+  animation: fade-in var(--dur-2) var(--ease) both;
+}
+
+.dialog {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 100%);
+  max-height: 80vh;
+  overflow: auto;
+  padding: 16px 18px 18px;
+  border-radius: var(--r-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  animation: fade-up var(--dur-2) var(--ease) both;
+}
+
+/* The ring is deliberately NOT suppressed here (rule 6). The dialog takes
+   focus programmatically when it opens, and a ring around it is the clearest
+   possible "you are here" for a keyboard user who pressed `?`. */
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin: -4px -6px -4px 0;
+  border-radius: var(--r-ctl);
+  color: var(--ink-3);
+  transition:
+    background-color var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+}
+
+.close:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.list kbd {
+  flex: none;
+  padding: 1px 6px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-ctl);
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-size: 11px;
+}
+
+.desc {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  color: var(--ink);
+  text-align: right;
+}
+
+.hint {
+  padding-top: 12px;
+  font-size: 11px;
+  color: var(--ink-3);
+}

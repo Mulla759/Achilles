@@ -1,0 +1,327 @@
+/* ==========================================================================
+   TaskRows — pipeline status rows
+   --------------------------------------------------------------------------
+   One card, rows divided by hairlines: a checklist in the margin of the page.
+   Every colour here is a token (rule 1); the only colour that appears at all
+   is a proof mark on a finished or broken step (rule 2 — and each of those
+   also has its own glyph SHAPE and its own word, so nothing depends on hue).
+
+   Local geometry props, so the glyph gutter, the connector hairline and the
+   sub-step indent can never drift apart:
+     --tr-pad     row padding, left and right
+     --tr-glyph   status glyph column (24px per the brief)
+     --tr-gap     glyph -> label gutter
+     --tr-indent  where the label starts = where sub-steps line up
+     --tr-spine   x of the vertical connector = centre of the glyph column
+   ========================================================================== */
+
+.card {
+  --tr-pad: 14px;
+  --tr-glyph: 24px;
+  --tr-gap: 12px;
+  --tr-indent: calc(var(--tr-pad) + var(--tr-glyph) + var(--tr-gap));
+  --tr-spine: calc(var(--tr-pad) + var(--tr-glyph) / 2);
+
+  background: var(--surface);
+  border-radius: var(--r-card);
+  /* The one shadow in the system: a contact shade plus a hairline ring, so
+     the card sits ON the paper without needing a border of its own. */
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Rows are separated, not boxed — a divider between entries, no border around
+   the outside (the card's ring already draws that). */
+.item + .item {
+  border-top: 1px solid var(--rule);
+}
+
+/* --------------------------------------------------------------------------
+   Row
+   glyph | label | meta | pill | chevron
+   Every row uses the same 5 tracks whether or not it is expandable, so the
+   pill and meta columns stay in a straight line down the card.
+   -------------------------------------------------------------------------- */
+
+.row {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--tr-glyph) minmax(0, 1fr) auto auto 14px;
+  align-items: center;
+  column-gap: var(--tr-gap);
+  width: 100%;
+  padding: 9px var(--tr-pad);
+  background: transparent;
+  transition: background-color var(--dur-1) var(--ease);
+}
+
+.rowBtn:hover {
+  background: var(--hover);
+}
+
+/* --------------------------------------------------------------------------
+   Status glyph
+   -------------------------------------------------------------------------- */
+
+.glyph {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--tr-glyph);
+  height: var(--tr-glyph);
+}
+
+.glyph svg {
+  position: absolute;
+  inset: 0;
+}
+
+/* The ring is structure, so it is drawn in a rule weight, not an ink. */
+.glyphPending .ring {
+  color: var(--rule-strong);
+}
+
+.glyphRunning .ring {
+  color: var(--rule);
+}
+
+/* Working: an arc sweeping the ring. --ink-2, because in-progress is not a
+   proof mark — nothing has been decided yet, so it gets no colour. */
+.arc {
+  color: var(--ink-2);
+  animation: spin var(--dur-spin) linear infinite;
+}
+
+.step {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--ink-3);
+}
+
+.glyphRunning .step {
+  color: var(--ink-2);
+}
+
+/* Finished and broken steps drop the ring for a bare mark, the way a marker
+   ticks or crosses a line on paper. */
+.glyphDone {
+  color: var(--ins);
+}
+
+.glyphFailed {
+  color: var(--del);
+}
+
+/* --------------------------------------------------------------------------
+   Label / meta
+   -------------------------------------------------------------------------- */
+
+/* Serif: this is the prose voice, and it is what makes the list read as a
+   marked-up document rather than a build log. */
+.label {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 1.3;
+  color: var(--ink);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+/* Pending text waiting on the server: an ink pulse, not a gradient sweep
+   (gradients are banned, and a moving highlight over text hurts reading).
+   Killed under reduced motion below — the arc, the pill word and the glyph
+   all still say "running", so no meaning is lost when it stops. */
+.labelRunning {
+  animation: shimmer-text var(--dur-loop) var(--ease) infinite;
+}
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   Status pill
+   The word is the primary signal; the wash only agrees with it.
+   -------------------------------------------------------------------------- */
+
+.pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  padding: 4px 9px 5px;
+  border-radius: var(--r-pill);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.pillPending {
+  color: var(--ink-3);
+  border-color: var(--rule);
+}
+
+.pillRunning {
+  color: var(--ink-2);
+  background: var(--paper-2);
+  border-color: var(--rule);
+}
+
+.pillDone {
+  color: var(--ins);
+  background: var(--ins-wash);
+  animation: pop-in var(--dur-2) var(--ease) both;
+}
+
+.pillFailed {
+  color: var(--del);
+  background: var(--del-wash);
+  animation: pop-in var(--dur-2) var(--ease) both;
+}
+
+/* --------------------------------------------------------------------------
+   Chevron
+   -------------------------------------------------------------------------- */
+
+.chevron {
+  color: var(--ink-3);
+  transition: transform var(--dur-2) var(--ease);
+}
+
+.rowOpen .chevron {
+  transform: rotate(180deg);
+}
+
+/* --------------------------------------------------------------------------
+   Details panel
+   0fr -> 1fr on grid-template-rows: the panel measures itself, so no height
+   is ever hardcoded and the row cannot jump when a sub-step wraps.
+   -------------------------------------------------------------------------- */
+
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-3) var(--ease);
+}
+
+.panelOpen {
+  grid-template-rows: 1fr;
+}
+
+.panelInner {
+  position: relative;
+  overflow: hidden;
+}
+
+/* The connector: one hairline running down the centre of the glyph column,
+   tying the sub-steps back to the step they belong to. Inside the clipped
+   element, so it grows with the panel instead of appearing first. */
+.panelInner::before {
+  content: "";
+  position: absolute;
+  left: var(--tr-spine);
+  top: 0;
+  bottom: 12px;
+  width: 1px;
+  background: var(--rule);
+}
+
+.subList {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--tr-pad) 10px var(--tr-indent);
+}
+
+.subRow {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tr-gap);
+  padding: 3px 0;
+}
+
+/* Scoped to the open state on purpose: adding .panelOpen is what starts the
+   animation, so the sub-steps are laid onto the page every time the row is
+   expanded — not once at mount, behind a closed panel. The 100ms stagger is
+   the per-item animation-delay set inline. */
+.panelOpen .subRow {
+  animation: fade-up var(--dur-2) var(--ease) both;
+}
+
+/* Short tick from the connector to each sub-step. */
+.subRow::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--tr-spine) - var(--tr-indent));
+  top: 0.95em;
+  width: 14px;
+  height: 1px;
+  background: var(--rule);
+}
+
+.subLabel {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+
+.subMeta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   globals.css already collapses every duration; this states the intent for
+   the two looping animations so they cannot flicker at 0.01ms in a browser
+   that handles the global rule differently.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .arc,
+  .labelRunning,
+  .panelOpen .subRow {
+    animation: none;
+  }
+
+  .panel {
+    transition: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Narrow screens: the pill leaves the row and the meta keeps its column, so
+   the label never gets squeezed to two characters.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 520px) {
+  .row {
+    grid-template-columns: var(--tr-glyph) minmax(0, 1fr) auto 14px;
+  }
+
+  /* The META column is what goes, not the pill. The pill's WORD is the row's
+     primary state signal by this component's own account, and hiding it left
+     the four states reading as glyph shape alone — on the one viewport where
+     the glyph is smallest. Meta is supplementary (a count, a figure) and the
+     same value is always available in the row's expanded detail, so it is the
+     right thing to give up for the width. */
+  .meta {
+    display: none;
+  }
+}

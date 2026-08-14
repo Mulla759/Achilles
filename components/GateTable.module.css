@@ -1,0 +1,163 @@
+/* ==========================================================================
+   GateTable — the marker's checklist
+   --------------------------------------------------------------------------
+   Header band pressed into the card (--paper-2), hairline rows, mono gate
+   names against a serif detail column: the grader's own sentence is prose, so
+   it is set in the manuscript voice.
+
+   A failing row takes --flag-wash, and its mark takes --flag ink — but the
+   row also carries a distinct glyph shape and the word "fail", so greyscale
+   loses nothing (rule 2).
+   ========================================================================== */
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.table thead th {
+  padding: 7px 12px;
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--rule-strong);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.table tbody td,
+.table tbody th {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+  font-weight: 400;
+}
+
+.table tbody tr:last-child td,
+.table tbody tr:last-child th {
+  border-bottom: none;
+}
+
+.rowFailed {
+  background: var(--flag-wash);
+}
+
+.markHead,
+.markCell {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.pass,
+.fail {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pass {
+  color: var(--ins);
+}
+
+.fail {
+  color: var(--flag);
+  font-weight: 500;
+}
+
+.labelCell {
+  width: 1%;
+  white-space: nowrap;
+  color: var(--ink);
+}
+
+.detailCell {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  min-width: 18ch;
+}
+
+.expandHead,
+.expandCell {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* Compact control tier — the same 11px / 24px / 2px 8px as DiffPanel's
+   in-table controls, so two tables in the same column do not disagree about
+   how big a small button is. */
+.expandBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 24px;
+  padding: 2px 8px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-ctl);
+  color: var(--ink-2);
+  font-size: 11px;
+  transition:
+    background-color var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+}
+
+/* --hover, like every other hover in the app. This was --surface, which is
+   pure white in light theme — and this button usually sits on a --flag-wash
+   row, so hovering punched a white block out of a tinted row. */
+.expandBtn:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.expandCount {
+  font-variant-numeric: tabular-nums;
+}
+
+.chevron {
+  transition: transform var(--dur-2) var(--ease);
+}
+
+.expandBtn[aria-expanded="true"] .chevron {
+  transform: rotate(90deg);
+}
+
+/* No enter animation: the row is mounted from the start and revealed with the
+   `hidden` attribute (so aria-controls always resolves), and an animation on a
+   node that was already in the DOM would have played once, unseen, at mount. */
+.offendersRow td {
+  padding: 0 12px 10px;
+  background: var(--flag-wash);
+}
+
+.offenders {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* The offending line, quoted back with a change bar in the margin — the one
+   place a coloured edge is allowed, because a change bar beside a quoted line
+   is an editorial mark rather than UI chrome. Hairline weight (rule 3): it was
+   2px, which is double the grid the rest of the layout is drawn on. */
+.offender {
+  padding: 2px 0 2px 10px;
+  border-left: 1px solid var(--flag);
+  font-family: var(--font-serif);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}

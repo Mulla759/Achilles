@@ -1,0 +1,394 @@
+/* ==========================================================================
+   RecommendationCard
+   --------------------------------------------------------------------------
+   The editor's margin note: one instruction, in the editor's own hand, with a
+   strength-of-opinion mark beside it and the rejected notes folded underneath.
+
+   Every colour here is a token (globals.css). The only hues that appear are
+   proof marks on the confidence meter — --ins for a confident recommendation,
+   --flag for one that wants a human look — and in both cases the written label
+   next to the bars says the same thing, so nothing is carried by colour alone.
+   ========================================================================== */
+
+.card {
+  background: var(--surface);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  padding: 18px 20px 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardEmpty {
+  gap: 8px;
+}
+
+/* --- Head ---------------------------------------------------------------
+   A mono eyebrow and a mono counter, sitting on the same baseline: the
+   "1 / 4" is the only place the card admits it is one of a set. */
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.position {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+/* The "/" in "1 / 4" is real content in the DOM, not decoration. In
+   --rule-strong (a border colour) it measured 1.6-1.8:1 in both themes, so the
+   counter read visually as "1 4". Meta ink: quiet, and actually there. */
+.positionSep {
+  padding: 0 2px;
+  color: var(--ink-3);
+}
+
+/* --- Lede ---------------------------------------------------------------
+   Serif headline: this is the sentence the editor wrote. The body is mono and
+   secondary ink so the two voices stay distinct.
+
+   min-height on the body is load-bearing: one recommendation's detail is one
+   sentence and another's is three, and the footer must not walk up and down
+   the page when an alternative is promoted. Three lines is the ceiling we
+   design for; a longer body simply grows past it. */
+
+.lede {
+  animation: fade-up var(--dur-2) var(--ease) both;
+}
+
+.headline {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.body {
+  margin-top: 6px;
+  min-height: calc(1.6em * 3);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.emptyBody {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-3);
+  max-width: 52ch;
+}
+
+/* --- Drawer -------------------------------------------------------------
+   0fr -> 1fr on grid-template-rows: the row collapses to nothing and expands
+   to exactly the content's height, so the card never needs a magic max-height
+   and never clips a long alternative. The clip element owns overflow:hidden
+   and min-height:0 — without min-height:0 a grid row refuses to go below its
+   content's intrinsic height and the animation does nothing.
+
+   Opacity rides along so browsers that cannot interpolate grid-template-rows
+   still get a fade instead of a snap. */
+
+.drawer {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--dur-3) var(--ease),
+    opacity var(--dur-2) var(--ease);
+}
+
+.drawerOpen {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.drawerClip {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.drawerInner {
+  margin-top: 12px;
+  padding: 10px 12px 6px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+}
+
+.drawerCaption {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule);
+}
+
+/* --- Alternative rows ---------------------------------------------------
+   Real <button>s in a real <ul>: each row is an action (promote this note to
+   the active one), so it is keyboard reachable and takes the global focus
+   ring. Hairline separators, no card-in-a-card. */
+
+.altList {
+  display: flex;
+  flex-direction: column;
+}
+
+.altList > li + li .altRow {
+  border-top: 1px solid var(--rule);
+}
+
+.altRow {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 6px;
+  margin: 0 -6px;
+  border-radius: var(--r-ctl);
+  transition:
+    background-color var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+}
+
+.altRow:hover {
+  background: var(--hover);
+}
+
+.altIndex {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ink-3);
+  padding-top: 1px;
+}
+
+.altText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.altHeadline {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--ink-2);
+}
+
+.altRow:hover .altHeadline {
+  color: var(--ink);
+}
+
+/* "promote" is the row's own verb. Kept at meta weight and revealed on
+   hover/focus, but it is text — not an icon-only affordance — and the row is
+   a button regardless, so a keyboard user never depends on this appearing. */
+.altPromote {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  opacity: 0;
+  padding-top: 2px;
+  transition: opacity var(--dur-1) var(--ease);
+}
+
+.altRow:hover .altPromote,
+.altRow:focus-visible .altPromote {
+  opacity: 1;
+}
+
+/* --- Foot ---------------------------------------------------------------
+   Meter and its label on the left, the two controls on the right, separated
+   from the body by a hairline rather than a shade. */
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+/* --- Confidence meter --------------------------------------------------
+   Three bars. Filled bars take the tier's proof-mark ink; empty bars are the
+   hairline colour, so the rack itself is always readable as "3 slots, n set".
+   The written label is a sibling, never a tooltip: the count, the label, and
+   the colour all say the same thing, and any two of them can be removed
+   (greyscale print, colour-blind reader) without losing the meaning. */
+
+.meter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.bars > span {
+  width: 4px;
+  border-radius: var(--r-mark);
+  animation: pixel-on var(--dur-2) var(--ease) both;
+}
+
+.bars > span:nth-child(1) {
+  height: 8px;
+}
+
+.bars > span:nth-child(2) {
+  height: 11px;
+  animation-delay: 40ms;
+}
+
+.bars > span:nth-child(3) {
+  height: 14px;
+  animation-delay: 80ms;
+}
+
+.barOff {
+  background: var(--rule);
+}
+
+.meterCompact .bars > span {
+  width: 3px;
+}
+
+.meterCompact .bars > span:nth-child(1) {
+  height: 5px;
+}
+
+.meterCompact .bars > span:nth-child(2) {
+  height: 7px;
+}
+
+.meterCompact .bars > span:nth-child(3) {
+  height: 9px;
+}
+
+.meterLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.meterCompact .meterLabel {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Tiers. 3 = an insertion we would make ourselves. 2 = a query for the
+   author, i.e. the flag mark. 0-1 = no opinion, so it stays ink: a weak
+   signal must not borrow the vocabulary of a proof mark. */
+
+.tierHigh .barOn {
+  background: var(--ins);
+}
+
+.tierHigh .meterLabel {
+  color: var(--ins);
+}
+
+.tierMid .barOn {
+  background: var(--flag);
+}
+
+.tierMid .meterLabel {
+  color: var(--flag);
+}
+
+.tierLow .barOn {
+  background: var(--ink-3);
+}
+
+.tierLow .meterLabel {
+  color: var(--ink-3);
+}
+
+/* --- Actions ----------------------------------------------------------- */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Both footer controls are the shared <Button> (primary / ghost). Nothing about
+   ground, border, padding, height or hover is restated here — that is the whole
+   point. These two classes only carry what is specific to this card. */
+
+.altToggle {
+  gap: 7px;
+}
+
+/* Count of folded alternatives — a figure, so mono and tabular. */
+.count {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--ink-3);
+  padding: 0 4px;
+  border-left: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
+}
+
+.chevron {
+  transition: transform var(--dur-2) var(--ease);
+}
+
+.altToggle[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+
+/* Narrow: the footer stacks, so the meter keeps its label rather than being
+   squeezed into an icon. */
+@media (max-width: 460px) {
+  .foot {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .accept {
+    margin-left: auto;
+  }
+
+  .altPromote {
+    display: none;
+  }
+}

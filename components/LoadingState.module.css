@@ -1,0 +1,145 @@
+/* ==========================================================================
+   LoadingState — inline loader for long-running work
+   --------------------------------------------------------------------------
+   A single row of type: pixel grid, label, elapsed figure. No card, no border,
+   no background — it has to be droppable into a line of prose or next to a
+   button without opening a box around itself.
+
+   The grid is ink at two strengths, never a colour: waiting is not a proof
+   mark. Colour in this system means something was struck, added, or queried.
+   ========================================================================== */
+
+/* Sizes are in px, like every sibling module. They used to be rem here and
+   only here — the same values, a different unit, so a future font-size on
+   :root would have moved this one component and left the rest behind. */
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  line-height: 1;
+  /* --cycle is set inline per variant (650ms chevron / 950ms orbit).
+     The fallback keeps the animation sane if the element is rendered
+     without it. */
+  --cycle: 650ms;
+}
+
+/* --------------------------------------------------------------------------
+   The 3x3 grid
+   --------------------------------------------------------------------------
+   4px cells, 1.5px gutter — 15px square overall, which sits on the cap height
+   of 13px mono without dragging the row taller than a line of text.
+   -------------------------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 4px);
+  grid-auto-rows: 4px;
+  gap: 1.5px;
+  flex: none;
+}
+
+.cell {
+  position: relative;
+  border-radius: var(--r-mark);
+}
+
+/* Two layers per cell, so the grid is never blank.
+   ::before is the dim floor — always painted, so the shape of the grid reads
+   as a grid even at the trough of the cycle and in a frozen screenshot.
+   ::after is the pulse, and it is the only thing that animates. */
+.cell::before,
+.cell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  border-radius: inherit;
+}
+
+.cell::before {
+  opacity: 0.16;
+}
+
+.cell::after {
+  opacity: 0;
+  animation: pixel-on var(--cycle) var(--ease) var(--delay, 0ms) infinite;
+}
+
+/* Permanently dim: the centre of the orbit. No pulse layer at all, so the
+   comet always has a still point to lap. */
+.dim::after {
+  content: none;
+  animation: none;
+}
+
+/* Variant shape. "dots" is the same choreography drawn round — the only
+   difference is the corner, so it stays one component and not two. Only the
+   round variant needs a rule: `.gridVariant`/`.orbit` restated .cell's own
+   --r-mark and were no-ops. */
+.dots .cell {
+  border-radius: 50%;
+}
+
+/* --------------------------------------------------------------------------
+   Label + figure
+   --------------------------------------------------------------------------
+   The label pulses between --ink-3 and --ink-2 (the shared shimmer-text
+   keyframe — an ink pulse, not a gradient sweep). Its period is twice the grid
+   cycle, so the two read as one mechanism breathing rather than two unrelated
+   loops. The elapsed figure never pulses: a number you are trying to read must
+   hold still.
+   -------------------------------------------------------------------------- */
+
+.label {
+  color: var(--ink-2);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  /* The one shimmer NOT on --dur-loop, on purpose: its period is twice this
+     instance's own grid cycle, which is what makes the cells and the label read
+     as one mechanism breathing rather than two unrelated loops. */
+  animation: shimmer-text calc(var(--cycle) * 2) var(--ease) infinite;
+}
+
+.timer {
+  color: var(--ink-3);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   --------------------------------------------------------------------------
+   globals.css already collapses every animation to 0.01ms with one iteration,
+   which lands an element on its END state. For pixel-on that end state is
+   opacity 1 — i.e. all nine cells would freeze at full strength and the "grid"
+   would look like a solid ink square. So this component cancels its own
+   animations outright instead: the cells fall back to the dim floor and the
+   label to a steady --ink-2.
+
+   Two-class selectors with !important, because the global rule is `*` with
+   !important and equal importance is decided on specificity.
+
+   The timer is untouched here and deliberately keeps ticking. It is not
+   decoration — on a job that takes a minute it is the only evidence anything
+   is still happening.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .root .cell::after {
+    animation: none !important;
+    opacity: 0 !important;
+    transform: none !important;
+  }
+
+  .root .cell::before {
+    opacity: 0.22 !important;
+  }
+
+  .root .label {
+    animation: none !important;
+    color: var(--ink-2);
+    opacity: 1;
+  }
+}

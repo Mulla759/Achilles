@@ -1,0 +1,91 @@
+/* ==========================================================================
+   TextField
+   --------------------------------------------------------------------------
+   The input is a well pressed into the card (--paper-2), the label is a mono
+   filing mark above it. Focus is left to the global ink ring — this module
+   never sets `outline: none`.
+   ========================================================================== */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.labelRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.optional {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-ctl);
+  background: var(--paper-2);
+  color: var(--ink);
+  font-size: 13px;
+  caret-color: var(--ink);
+  transition:
+    border-color var(--dur-1) var(--ease),
+    background-color var(--dur-1) var(--ease);
+}
+
+.input::placeholder {
+  color: var(--ink-3);
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--rule-strong);
+}
+
+.input:focus {
+  background: var(--surface);
+  border-color: var(--rule-strong);
+}
+
+/* A rejected value is a struck value: the mark ink on the border plus the
+   wash behind it, with the reason spelled out underneath. */
+.invalid,
+.invalid:hover:not(:disabled),
+.invalid:focus {
+  border-color: var(--del);
+  background: var(--del-wash);
+}
+
+.error {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--del);
+}
+
+/* The leading "−" is what carries the meaning when colour is unavailable. */
+.error::before {
+  content: "−";
+  flex: none;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--ink-3);
+}

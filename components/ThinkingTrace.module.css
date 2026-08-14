@@ -1,0 +1,296 @@
+/* ==========================================================================
+   ThinkingTrace — the model's margin notes
+   --------------------------------------------------------------------------
+   Not a card. This sits directly on --paper like an annotation written beside
+   a paragraph of the proof, so it has no surface, no shadow and no border box
+   of its own: the only structure is one hairline running down the left of the
+   indented notes, and that hairline is positioned from a measured value in the
+   component (see the `rule` state) so it can never overshoot the last step.
+
+   Everything here is tokens from app/globals.css and the shared keyframes
+   declared there (fade-up, fade-in, shimmer-text, spin). No literal colours,
+   no local @keyframes, no gradients.
+
+   Horizontal grid, all in one place so the hairline stays under the marks:
+     header mark box   13px, header padded 4px left and pulled back -4px, so
+                       its centre lands 6.5px from the component's left edge
+     step mark box     13px, first child of each step → centre also 6.5px
+     .rule             left: 6px, width: 1px → covers 6–7px, i.e. centred
+   Change one of those three and you must change the other two.
+   ========================================================================== */
+
+.root {
+  display: block;
+}
+
+/* --- header ---------------------------------------------------------------
+   A button, because it toggles something. Full width so the whole line is a
+   target, but it is only ever a line of text with two marks on it — the hover
+   tint is the only chrome it gets, and it is a paper tint, never a hue. */
+
+.header,
+.headerStatic {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-left: -4px;
+  padding: 5px 8px 5px 4px;
+  border-radius: var(--r-ctl);
+  color: var(--ink-2);
+}
+
+.header {
+  transition:
+    background-color var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+}
+
+.header:hover {
+  background-color: var(--hover);
+  color: var(--ink);
+}
+
+/* --- header marks --------------------------------------------------------- */
+
+.mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  color: var(--ink-3);
+}
+
+.header:hover .mark {
+  color: var(--ink-2);
+}
+
+/* Indeterminate work. The arc is visibly open, so "in progress" still reads
+   when the reduced-motion block stops it turning. */
+.spin {
+  animation: spin var(--dur-spin) linear infinite;
+}
+
+/* --- header title --------------------------------------------------------- */
+
+/* Serif: this is running prose in the margin, not a label. */
+.titleRunning,
+.titleDone {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 1.4;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Waiting on the server: the ink pulses between --ink-3 and --ink-2. --dur-loop
+   is the ambient tier and is deliberately past the 300ms ceiling — this is not
+   a state change, and a 300ms pulse would flicker. The shape of the mark
+   carries the state too. */
+.titleRunning {
+  animation: shimmer-text var(--dur-loop) var(--ease) infinite;
+}
+
+/* Settled: fades once to secondary ink and stays there. */
+.titleDone {
+  color: var(--ink-2);
+  animation: fade-in var(--dur-3) var(--ease) both;
+}
+
+.header:hover .titleDone {
+  color: var(--ink);
+}
+
+/* --- header meta ---------------------------------------------------------- */
+
+.count {
+  flex: none;
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}
+
+.chevron {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 12px;
+  height: 12px;
+  color: var(--ink-3);
+  transition: transform var(--dur-2) var(--ease);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* --- trace body ----------------------------------------------------------
+   The disclosure, in CSS: grid-template-rows 0fr -> 1fr, exactly as TaskRows
+   and RecommendationCard do it. The row collapses to nothing and expands to
+   the content's own height, so no height is hardcoded and a wrapping step
+   never clips. .panelClip owns overflow:hidden and min-height:0 — without
+   min-height:0 a grid row refuses to go below its content's intrinsic height
+   and the transition does nothing. Opacity rides along so a browser that
+   cannot interpolate grid-template-rows still fades instead of snapping.
+
+   This replaced a motion.div animating height 0 -> auto. Same effect, no JS,
+   and it cannot drift off --ease.
+
+   .body stays the positioning origin that the measured hairline and the step
+   marks are both laid out against. */
+
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--dur-3) var(--ease),
+    opacity var(--dur-2) var(--ease);
+}
+
+.panelOpen {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.panelClip {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.body {
+  position: relative;
+  padding: 2px 0 4px;
+}
+
+.rule {
+  position: absolute;
+  left: 6px;
+  z-index: 0;
+  width: 1px;
+  background-color: var(--rule);
+}
+
+/* Explicitly not a positioning origin: the marks inside it must measure their
+   offsetTop against .body, which is what the hairline is positioned in. */
+.list {
+  position: static;
+}
+
+/* --- step ---------------------------------------------------------------- */
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 3px 0;
+  animation: fade-up var(--dur-2) var(--ease) both;
+  animation-delay: var(--trace-delay, 0ms);
+}
+
+/* The mark sits on top of the hairline and carries a paper-coloured ground so
+   the line stops at its edge instead of striking through the glyph. */
+.stepMark {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  margin-top: 3px;
+  color: var(--ink-3);
+  /* Ground defaults to the page because this component is meant to sit on it.
+     A parent that puts the trace inside a well or a card overrides the ground
+     with another token — `style={{ "--trace-ground": "var(--surface)" }}` — so
+     the break in the hairline still matches whatever is behind it. */
+  background-color: var(--trace-ground, var(--paper));
+}
+
+/* The step in hand: one ink step stronger than the settled ticks, and it is a
+   hollow bullet rather than a tick, so the difference is never colour alone. */
+.stepMark[data-active] {
+  color: var(--ink-2);
+}
+
+.primary {
+  min-width: 0;
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* Tool names, file paths, identifiers — anything you might retype. */
+.primaryMono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+/* The step currently in hand pulses with the same ink as the header title. */
+.primaryActive {
+  animation: shimmer-text var(--dur-loop) var(--ease) infinite;
+}
+
+/* Mono meta pinned right: a file, a count, a source. Tabular so a column of
+   figures does not jitter as steps arrive. */
+.secondary {
+  flex: none;
+  margin-left: auto;
+  margin-top: 1px;
+  padding-left: 14px;
+  max-width: 45%;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.6;
+  color: var(--ink-3);
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- reduced motion ------------------------------------------------------
+   globals.css already collapses every duration. This states the intent for the
+   three loops so they cannot land on a dimmed shimmer frame or flicker at
+   0.01ms: the arc is visibly open and the marks differ in shape, so stopping
+   them costs no meaning. Same block, same reasoning, as TaskRows. */
+
+@media (prefers-reduced-motion: reduce) {
+  .spin,
+  .titleRunning,
+  .primaryActive,
+  .step {
+    animation: none;
+  }
+
+  .titleRunning {
+    color: var(--ink-2);
+  }
+
+  .panel {
+    transition: none;
+  }
+}
+
+/* Narrow column: the meta drops under its step rather than crushing the prose
+   to two words a line. 22px = mark box + gap, so it stays on the text edge. */
+@media (max-width: 30rem) {
+  .step {
+    flex-wrap: wrap;
+  }
+
+  .secondary {
+    margin-left: 22px;
+    padding-left: 0;
+    max-width: calc(100% - 22px);
+    text-align: left;
+  }
+}

@@ -1,0 +1,427 @@
+/* ==========================================================================
+   DiffPanel — the marked-up proof
+   --------------------------------------------------------------------------
+   This is the one screen that literally is the metaphor: a page of bullets
+   coming back with strikes and insertions on it. So the panel is a raised
+   sheet (--surface) on the page, the grid is hairlines, and the only colour
+   is the proof mark itself — --del/--ins ink over their washes.
+
+   Colour never carries the meaning alone (rule 2): every struck line also has
+   line-through plus a leading "−", every inserted line a leading "+", every
+   reverted row a leading "=" and no tint at all. Greyscale print and
+   colour-blind readers lose nothing.
+
+   Tokens only — no literal colour appears below, and none is derived here
+   either. The "slightly stronger tint" on the changed words is
+   --del-wash-2 / --ins-wash-2, which are per-theme tokens in globals.css.
+   They used to be mixed locally with color-mix(in srgb, var(--del) 13%,
+   var(--del-wash)); that put three colour values in a component file that no
+   theme controlled, which rule 1 exists to prevent.
+   ========================================================================== */
+
+.panel {
+  background: var(--surface);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card); /* the only shadow: contact shade + hairline */
+  animation: fade-in var(--dur-2) var(--ease) both;
+}
+
+/* --- Header --------------------------------------------------------------
+   Serif title over a mono tally: the manuscript voice naming the thing, the
+   working voice counting it. */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 13px 16px 12px;
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.titleGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+
+.count {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+/* --rule-strong is a border colour; as a separator glyph between figures it
+   measures under 2:1, so "4 changes · 2 kept" collapsed to "4 changes 2 kept".
+   Meta ink instead — it is quiet enough and it is actually visible. */
+.dot {
+  padding: 0 0.45em;
+  color: var(--ink-3);
+}
+
+.headerActions {
+  display: flex;
+  gap: 6px;
+}
+
+/* Compact control tier: 11px / 24px min-height / 2px 8px. A control that sits
+   inside a table row or a card header cannot be Button's 34px without pushing
+   the row taller than its own text, so it is deliberately smaller — but there
+   is ONE compact size, shared with .segBtn below and GateTable's .expandBtn,
+   rather than a different guess per file. Form-scale buttons are always the
+   shared <Button>. */
+.btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  min-height: 24px;
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-ctl);
+  padding: 2px 8px;
+  transition: background var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.btn:active:not(:disabled) {
+  background: var(--paper-2);
+}
+
+.btn:disabled {
+  color: var(--ink-3);
+  border-color: var(--rule);
+  opacity: 0.6;
+}
+
+/* --- Empty state --------------------------------------------------------- */
+
+.empty {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--ink-3);
+  padding: 18px 16px 20px;
+  max-width: 62ch;
+}
+
+/* --- Table ---------------------------------------------------------------
+   Real <table> (rule 6). Wrapped so a long bullet scrolls the well, never
+   the page. */
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.caption {
+  font-family: var(--font-serif);
+  font-size: 12.5px;
+  font-style: italic;
+  line-height: 1.5;
+  text-align: left;
+  color: var(--ink-3);
+  padding: 10px 16px 11px;
+  max-width: 74ch;
+}
+
+.table thead th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--ink-3);
+  background: var(--paper-2); /* a header band pressed into the sheet */
+  padding: 5px 12px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+.numHead,
+.decisionHead {
+  width: 1%;
+}
+
+.decisionHead {
+  text-align: right;
+}
+
+/* Each entry is its own <tbody>, so the group heading is a real colgroup
+   header rather than a styled row. */
+.group {
+  animation: fade-in var(--dur-2) var(--ease) both;
+}
+
+.groupHead {
+  display: table-cell;
+  font-weight: 500;
+  background: var(--paper-2);
+  padding: 7px 12px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.group:first-of-type .groupHead {
+  border-top: none;
+}
+
+.groupLabel {
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  color: var(--ink);
+}
+
+.groupMeta {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+  padding-left: 0.75em;
+  white-space: nowrap;
+}
+
+.numCell {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+  vertical-align: top;
+  text-align: right;
+  width: 1%;
+  white-space: nowrap;
+  padding: 11px 4px 11px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.changeCell {
+  vertical-align: top;
+  padding: 8px 12px 9px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.decisionCell {
+  vertical-align: top;
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+  padding: 9px 12px 9px 8px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.table tbody:last-of-type tr:last-child .numCell,
+.table tbody:last-of-type tr:last-child .changeCell,
+.table tbody:last-of-type tr:last-child .decisionCell {
+  border-bottom: none;
+}
+
+/* --- Diff lines ----------------------------------------------------------
+   Two stacked lines per bullet. The bullet text is serif because it IS resume
+   prose — reading it in the voice it will be printed in is the whole point.
+   The glyph gutter stays mono so the "−"/"+" columns line up exactly. */
+
+.line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  padding: 3px 8px 4px;
+  border-radius: var(--r-ctl);
+  transition: background var(--dur-1) var(--ease);
+}
+
+.line + .line {
+  margin-top: 3px;
+}
+
+.glyph {
+  flex: none;
+  width: 1ch;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+  user-select: none;
+}
+
+.lineText {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  line-height: 1.5;
+  min-width: 0;
+}
+
+/* Deletion: mark ink on its wash, struck through. Three signals, one of
+   which is colour. */
+.del {
+  color: var(--del);
+  background: var(--del-wash);
+}
+
+.del .lineText {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--del);
+}
+
+/* Insertion: mark ink on its wash, "+" gutter, no strike. */
+.ins {
+  color: var(--ins);
+  background: var(--ins-wash);
+}
+
+/* Reverted: the original stands as plain ink on bare paper. The absence of a
+   wash is itself the state — legible at a glance across the column. */
+.plain {
+  color: var(--ink-2);
+  background: transparent;
+  padding-left: 8px;
+}
+
+.plain .glyph {
+  color: var(--ink-3);
+  font-weight: 400;
+}
+
+.void {
+  font-style: italic;
+  color: var(--ink-3);
+}
+
+/* The words that actually moved. Weight is the primary signal (survives
+   greyscale); the tint is one step deeper than the row wash, mixed from the
+   row's own mark ink so no new colour enters the system. */
+.emph {
+  font-weight: 700;
+  border-radius: var(--r-mark);
+  padding: 0 0.1em;
+  margin: 0 -0.1em;
+}
+
+.del .emph {
+  background: var(--del-wash-2);
+}
+
+.ins .emph {
+  background: var(--ins-wash-2);
+}
+
+/* A reverted row used to dim its number to --rule-strong. That is a hairline
+   colour: as 11px text it measured 1.77:1 in light and 1.68:1 in dark, so the
+   number — real content, in a <th scope="row"> — simply vanished in both
+   themes, and it was the one state in the app carried by colour alone. The
+   state is already said three ways (the "=" glyph, the missing wash, and
+   `revert` sitting pressed in the row's own toggle), so the row number just
+   keeps its ordinary meta ink. */
+
+/* --- Keep / revert toggle ------------------------------------------------
+   Two <button aria-pressed> in a group: the pressed one is inked and seated
+   on the inset tone, the other is muted. State is carried by weight and
+   ground, not hue. */
+
+.toggle {
+  display: inline-flex;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-ctl);
+  overflow: hidden;
+}
+
+/* Compact tier, same 11px / 24px / 2px 8px as .btn — seated in a group, so it
+   drops the border and the radius to the group's edge. */
+.segBtn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  min-height: 24px;
+  color: var(--ink-3);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 2px 8px;
+  transition: background var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+}
+
+.segBtn + .segBtn {
+  border-left: 1px solid var(--rule);
+}
+
+.segBtn:hover {
+  background: var(--hover);
+  color: var(--ink-2);
+}
+
+.segBtn[aria-pressed="true"] {
+  background: var(--paper-2);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.segBtn[aria-pressed="true"]:hover {
+  background: var(--paper-2);
+}
+
+/* Focus ring is global (2px solid --ink, 2px offset); the seated buttons need
+   room for it to show without being clipped by the group's overflow. */
+.segBtn:focus-visible {
+  outline-offset: -2px;
+}
+
+/* --- Narrow screens -----------------------------------------------------
+   Below ~560px the decision cell drops under the diff so the bullet keeps a
+   readable measure instead of the table scrolling sideways. */
+
+@media (max-width: 560px) {
+  .table thead {
+    display: none;
+  }
+
+  .numCell,
+  .changeCell,
+  .decisionCell {
+    display: block;
+    width: auto;
+    text-align: left;
+    border-bottom: none;
+  }
+
+  .numCell {
+    padding: 9px 12px 0;
+  }
+
+  .changeCell {
+    padding: 4px 12px 0;
+  }
+
+  .decisionCell {
+    padding: 8px 12px 11px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .groupHead {
+    display: block;
+  }
+}

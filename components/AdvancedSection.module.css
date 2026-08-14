@@ -1,0 +1,192 @@
+/* ==========================================================================
+   AdvancedSection — the folded-back corner of the form
+   --------------------------------------------------------------------------
+   Same card as Panel so the rail reads as one stack of sheets, but the header
+   is a disclosure button rather than a static label.
+   ========================================================================== */
+
+.section {
+  background: var(--surface);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* Closed, the trigger IS the whole card, so all four corners are rounded. Open,
+   it is the card's header with a body under it — rounding the bottom corners
+   there curves them away from the body's border-top and leaves two nicks in the
+   edge, so the bottom pair squares off. */
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 16px;
+  border-radius: var(--r-card);
+  color: var(--ink-2);
+  transition: background-color var(--dur-1) var(--ease);
+}
+
+.trigger[aria-expanded="true"] {
+  border-radius: var(--r-card) var(--r-card) 0 0;
+}
+
+.trigger:hover {
+  background: var(--hover);
+}
+
+.triggerLabel {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.chevron {
+  flex: none;
+  color: var(--ink-3);
+  transition: transform var(--dur-2) var(--ease);
+}
+
+.trigger[aria-expanded="true"] .chevron {
+  transform: rotate(90deg);
+}
+
+/* A required key is a flagged query against the form: mark ink on its wash,
+   and the words say what the mark means. */
+.requiredBadge {
+  margin-left: auto;
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  background: var(--flag-wash);
+  color: var(--flag);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* The disclosure, in CSS: 0fr -> 1fr on grid-template-rows, the same technique
+   TaskRows / ThinkingTrace / RecommendationCard use. The panel stays mounted
+   (so aria-controls resolves and Ctrl+K can focus the key field), and the row
+   measures the content instead of animating a hardcoded height. */
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--dur-3) var(--ease),
+    opacity var(--dur-2) var(--ease);
+}
+
+.panelOpen {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.panelClip {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 14px 16px 16px;
+  border-top: 1px solid var(--rule);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    transition: none;
+  }
+}
+
+.keyRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.keyLabel {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.keyInputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.keyInput {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-ctl);
+  background: var(--paper-2);
+  color: var(--ink);
+  font-size: 13px;
+  caret-color: var(--ink);
+  transition:
+    border-color var(--dur-1) var(--ease),
+    background-color var(--dur-1) var(--ease);
+}
+
+.keyInput::placeholder {
+  color: var(--ink-3);
+}
+
+.keyInput:focus {
+  background: var(--surface);
+  border-color: var(--rule-strong);
+}
+
+/* Not the compact tier and not <Button> either: it is welded to the side of the
+   key input and has to be exactly as tall as it, which is what `flex: none` on
+   a stretched row plus zero vertical padding buys. Any fixed height here would
+   drift the moment the input's font-size or padding changed. */
+.showBtn {
+  flex: none;
+  padding: 0 12px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-ctl);
+  color: var(--ink-2);
+  font-size: 11px;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+}
+
+.showBtn:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.keyInvalid,
+.keyInvalid:focus {
+  border-color: var(--del);
+  background: var(--del-wash);
+}
+
+.error {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--del);
+}
+
+/* The leading "−" carries the meaning when colour cannot. */
+.error::before {
+  content: "−";
+  flex: none;
+}
+
+.note {
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--ink-3);
+}

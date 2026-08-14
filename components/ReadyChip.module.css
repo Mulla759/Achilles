@@ -1,0 +1,47 @@
+/* ==========================================================================
+   ReadyChip — the verdict, in words
+   --------------------------------------------------------------------------
+   Not a chip any more: a sentence on a wash, the way an editor writes the
+   decision at the top of a proof. Glyph shape + wording + colour, in that
+   order of importance.
+   ========================================================================== */
+
+.statement {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 10px 12px;
+  border-radius: var(--r-ctl);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  line-height: 1.5;
+  animation: fade-in var(--dur-2) var(--ease) both;
+}
+
+.ready {
+  background: var(--ins-wash);
+  color: var(--ins);
+}
+
+.notReady {
+  background: var(--flag-wash);
+  color: var(--flag);
+}
+
+.mark {
+  flex: none;
+  margin-top: 3px;
+}
+
+.text {
+  min-width: 0;
+}
+
+.verdict {
+  font-weight: 600;
+}
+
+/* The reason sits in ordinary ink: it is prose, not a mark. */
+.detail {
+  color: var(--ink-2);
+}

@@ -1,0 +1,63 @@
+/* ==========================================================================
+   Button
+   --------------------------------------------------------------------------
+   No accent colour exists in this system, so emphasis is carried by ground:
+   solid ink (primary) -> hairline (ghost) -> bare type (subtle).
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--r-ctl);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-1) var(--ease),
+    border-color var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+}
+
+.primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--ink-2);
+  border-color: var(--ink-2);
+}
+
+.ghost {
+  border-color: var(--rule-strong);
+  color: var(--ink-2);
+}
+
+.ghost:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.subtle {
+  color: var(--ink-3);
+}
+
+.subtle:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--ink-2);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+}
+
+.full {
+  width: 100%;
+}

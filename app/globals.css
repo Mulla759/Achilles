@@ -1,0 +1,575 @@
+/* ==========================================================================
+   Achilles — editorial base
+   --------------------------------------------------------------------------
+   The whole UI is meant to read like a marked-up paper coming back from an
+   editor: paper, ink, hairline rules, and proof marks in the margin. A resume
+   is black and white, so the interface is near-monochrome too — what you see
+   on screen is honest about what the exported PDF will look like.
+
+   Colour is not part of the visual language. It appears ONLY as an editor's
+   proof mark: something struck out (--del), something inserted (--ins),
+   something queried (--flag). Never as brand, never as decoration.
+
+   This file owns: the font faces, every design token, the reset, the focus
+   ring, the shared keyframes, and four utility classes. Component CSS Modules
+   consume the tokens and are forbidden from declaring raw colour values.
+   Token reference for other components: components/README.md
+   ========================================================================== */
+
+/* Self-hosted variable font. Bundled and served from our own origin — the app
+   must render with zero external requests (no CDN, no Google Fonts <link>),
+   because it has to work offline and must not leak a page view to a third
+   party. The serif half of the system is deliberately a SYSTEM stack, so
+   there is nothing to download for it. */
+@import "@fontsource-variable/jetbrains-mono";
+
+/* ==========================================================================
+   1. TOKENS — light (default)
+   ========================================================================== */
+
+:root {
+  /* --- Paper -------------------------------------------------------------
+     Three depths, all warm off-white. Warm rather than pure #FFF because
+     pure white reads as "screen"; a paper stock reads as "document".
+     --paper    the page itself
+     --paper-2  an inset or well — something pressed INTO the page
+     --surface  a raised card — something laid ON the page (the only place
+                pure white is allowed, so cards separate from paper without
+                needing a shadow) */
+  --paper: #fbfaf7;
+  --paper-2: #f4f2ed;
+  --surface: #ffffff;
+
+  /* --- Ink ---------------------------------------------------------------
+     A single hue at three strengths, mirroring pen pressure.
+     --ink    body copy, headings, anything you must read
+     --ink-2  secondary copy — supporting prose, labels
+     --ink-3  meta — timestamps, counts, hints. The weakest ink allowed, and
+              it is pinned by a measurement, not by taste: it must clear WCAG
+              AA (4.5:1) on --paper-2, which is the darkest ground it is ever
+              allowed to sit on, because it carries the 10-11px meta layer
+              across the whole UI. Measured: 4.82:1 on --paper-2, 5.17:1 on
+              --paper, 5.39:1 on --surface, 4.79:1 on --flag-wash. The
+              previous #7E7A6F measured 3.83:1 on --paper-2 and failed.
+              Still clearly weaker than --ink-2 (8.16:1 on the same ground),
+              which is the whole point of having three strengths. */
+  --ink: #14130f;
+  --ink-2: #4b4840;
+  --ink-3: #6e6a60;
+
+  /* --- Rules -------------------------------------------------------------
+     Structure comes from hairlines, not elevation (see --shadow-card).
+     --rule         default hairline: table rows, card edges, dividers
+     --rule-strong  emphasis: a table's header underline, an active edge,
+                    a control that needs to look pressable */
+  --rule: #e3dfd5;
+  --rule-strong: #c8c2b4;
+
+  /* --- Proof marks -------------------------------------------------------
+     The only colour in the system. Each mark is a PAIR: a saturated ink for
+     the glyph/text, and a very low-chroma wash for the row or block it
+     applies to.
+
+     Why a wash and not a coloured border: the mark has to cover a whole row
+     of a diff (or a whole flagged block) and stay legible under body text.
+     A coloured border would fight the hairline grid that carries the layout,
+     and would read as a UI chrome accent — a brand colour — which is exactly
+     what this system forbids. A wash sits BEHIND the text like a highlighter
+     pass on paper, leaves the hairline grid intact, and disappears entirely
+     when printed in greyscale (which is fine, because colour is never the
+     only signal — see rule 2 below).
+
+     Rule 2, restated because it is an accessibility requirement, not taste:
+     colour NEVER carries meaning alone. A deletion also gets line-through
+     and a leading "−". An insertion also gets a leading "+". A flag also
+     gets its own glyph and label. Greyscale print and colour-blind readers
+     lose nothing.
+
+     WHICH MARK MEANS WHAT — the two failure marks are not interchangeable,
+     and the split is deliberate rather than drift:
+       --del   an operation was struck: the pipeline broke, the service is
+               offline, a field's value was rejected. Something did not run.
+       --flag  the DOCUMENT needs a human look: a rubric gate did not pass,
+               a required term is missing, the resume is not ready to send.
+               Everything ran; the page is what is wanting.
+     So "step failed" is --del while "gate fail" is --flag, and that is the
+     correct reading, not an inconsistency. A reader who learns
+     "red = the machine broke, gold = the page needs work" is never wrong.
+
+     --*-wash-2 is one step deeper than the wash, for the words inside a
+     marked row that actually moved. Kept here rather than mixed in a module
+     with color-mix(): globals.css is the single place a literal colour may
+     appear, and a value no theme controls is not a token. Each is exactly
+     `color-mix(in srgb, <mark> 13%, <wash>)` resolved to a literal. */
+  --del: #9e2f26;
+  --del-wash: #f7edeb;
+  --del-wash-2: #ebd4d1;
+  --ins: #2c6349;
+  --ins-wash: #ebf2ed;
+  --ins-wash-2: #d2dfd8;
+  /* Two steps darker than the original #8A6A1F, which measured 4.48:1 on
+     --flag-wash — under AA, and it is set at 10-11px. Now 5.14:1. */
+  --flag: #7f611c;
+  --flag-wash: #f7f1e3;
+
+  /* --- Interaction -------------------------------------------------------
+     Hover is a paper tint, not a colour change: the row lifts toward the
+     inset tone. Same value as --paper-2 by design — a hovered row reads as
+     the page being pressed, and it means hover never introduces a hue. */
+  --hover: #f4f2ed;
+
+  /* --- Scrim -------------------------------------------------------------
+     The wash a modal lays over the page. It MUST be defined per theme and
+     must never be mixed off --ink: --ink inverts between themes, so an
+     ink-derived scrim dims the page in light and brightens it in dark — a
+     pale veil over the whole viewport, which is the glassmorphism rule 3
+     forbids. Light: ink at 24%, so the page reads as paper in shadow. Dark:
+     black, and heavier, because dark paper has less room to fall. */
+  --scrim: rgba(20, 19, 15, 0.24);
+
+  /* --- Radii -------------------------------------------------------------
+     Barely rounded. Paper has a cut edge, not a moulded one; anything above
+     ~4px starts to read as plastic UI. --r-pill is reserved for genuine
+     pills (a status chip, a keyword tag), where the shape itself is the
+     affordance. */
+  --r-card: 4px;
+  --r-ctl: 3px;
+  --r-pill: 999px;
+  /* Objects 3-5px across — a meter bar, a pixel-grid cell, a highlighted run
+     of words. --r-ctl on a 4px bar is a circle; this is the optical minimum
+     that still reads as "cut, not moulded". Nothing smaller exists. */
+  --r-mark: 1px;
+
+  /* --- Elevation --------------------------------------------------------
+     Exactly one shadow exists, and it is barely a shadow: a 1px contact
+     shade plus a hairline ring drawn as a spread so a card's edge is crisp
+     at any zoom. Anything more (glow, coloured shadow, blur, glass) breaks
+     the paper metaphor and is forbidden. */
+  --shadow-card: 0 1px 2px rgba(20, 19, 15, 0.05), 0 0 0 1px var(--rule);
+
+  /* --- Motion -----------------------------------------------------------
+     One easing curve for the whole app so every movement feels like it comes
+     from the same hand. Durations are functional, never expressive:
+     120ms  state flip (hover, press, checkbox)
+     180ms  element enter/exit (row, chip, tooltip)
+     300ms  layout change (panel open, list reflow) — the ceiling.
+     Every animation must be switched off under prefers-reduced-motion. */
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --dur-3: 300ms;
+
+  /* Ambient loops are a separate tier, and they are the ONLY thing allowed
+     past the 300ms ceiling. A loop is not a state change: it says "still
+     waiting", and at 300ms it flickers. Two values, so every shimmer in the
+     app breathes at one period and every spinner turns at one speed.
+     Both are cancelled under prefers-reduced-motion like everything else. */
+  --dur-spin: 900ms;
+  --dur-loop: 1600ms;
+
+  /* --- Type -------------------------------------------------------------
+     Mono is the working voice: figures, scores, keywords, file names, dates,
+     anything that lines up in a column. Serif is the manuscript voice:
+     section headings and running prose. The mix is what makes the screen
+     read as an edited document rather than a dashboard. */
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular,
+    monospace;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+    serif;
+
+  color-scheme: light;
+}
+
+/* ==========================================================================
+   2. TOKENS — dark
+   --------------------------------------------------------------------------
+   Not an inversion: warm near-black paper and a bone-white ink, so the dark
+   theme still reads as a printed page seen under a lamp. Proof-mark inks are
+   lightened and desaturated to hold contrast on dark paper; the washes are
+   near-black tints of the same hue, because a light wash on dark paper would
+   glare and would stop body text from being readable on top of it.
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12110e;
+    --paper-2: #1a1815;
+    --surface: #191713;
+
+    --ink: #ece8df;
+    --ink-2: #b2ac9e;
+    /* Lifted from #837E71, which measured 4.38:1 on --paper-2 — under AA on
+       the darkest ground it is allowed to sit on. Now 4.88:1 on --paper-2,
+       4.93:1 on --surface, 4.57:1 on --flag-wash. */
+    --ink-3: #8b8679;
+
+    --rule: #2c2a25;
+    --rule-strong: #413e36;
+
+    --del: #d4796a;
+    --del-wash: #241a18;
+    --del-wash-2: #3b2623;
+    --ins: #77a98c;
+    --ins-wash: #17201a;
+    --ins-wash-2: #233229;
+    --flag: #c6a45c;
+    --flag-wash: #231e14;
+
+    --hover: #201e1a;
+
+    /* Black, not ink: see the light-theme note. On dark paper the scrim also
+       has to be heavier, because there is less headroom below --paper before
+       the page stops reading as paper at all. */
+    --scrim: rgba(0, 0, 0, 0.66);
+
+    /* Contact shade has to be pure black on dark paper — the light theme's
+       warm-grey shade would read as a lighter halo, i.e. a glow. */
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--rule);
+
+    color-scheme: dark;
+  }
+}
+
+/* ==========================================================================
+   3. RESET — minimal
+   Only what is needed so component modules start from a predictable page.
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+/* Headings are the manuscript voice by default. A component that needs a
+   heading to line up with tabular data opts back out with `.mono`. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  list-style: none;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Icons are inline SVG only (no icon package). Inheriting currentColor is
+   what lets a proof-mark glyph pick up --del / --ins / --flag from its row. */
+svg {
+  fill: none;
+  stroke: currentColor;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border-radius: var(--r-ctl);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  text-align: inherit;
+}
+
+button:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
+textarea {
+  resize: vertical;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  text-decoration-color: var(--ink);
+}
+
+/* Tabular data is real <table> markup (rule 6), so give it a sane baseline
+   here instead of repeating it in every module. */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  font-weight: 500;
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--font-mono);
+  font-size: 0.925em;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 0;
+}
+
+::selection {
+  background: var(--rule-strong);
+  color: var(--ink);
+}
+
+/* Hairline scrollbars, so a scrolling well still looks like a page edge. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--rule-strong);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: var(--r-pill);
+}
+
+/* ==========================================================================
+   4. FOCUS
+   --------------------------------------------------------------------------
+   One ring, full-strength ink, offset so it never touches the element's own
+   hairline. Ink rather than an accent colour: the ring is not a proof mark,
+   and it must be equally visible on paper, wash, and surface in both themes.
+   :focus-visible only — pointer users never see it, keyboard users always do.
+   ========================================================================== */
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* Never remove the ring without replacing it. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ==========================================================================
+   5. KEYFRAMES — shared
+   --------------------------------------------------------------------------
+   Defined once here so every component animates identically. Pair each with
+   --ease and one of --dur-1/2/3. All of them are cancelled by the
+   reduced-motion block in section 6.
+   ========================================================================== */
+
+/* Content arriving in place (results, log lines). */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Content arriving from below — a row being laid onto the page. Short travel
+   on purpose: 6px reads as placement, 20px reads as a slideshow. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A mark being stamped: chips, badges, a gate flipping to passed. */
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Indeterminate work (spinners). */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Pending text — a label that is waiting on the server.
+   Deliberately an ink pulse and NOT a gradient sweep: gradients are banned
+   (rule 3), and a moving highlight over text hurts readability. Apply to the
+   text element itself; it animates colour + opacity only, so it needs no
+   background, no background-clip, and no extra markup. */
+@keyframes shimmer-text {
+  0%,
+  100% {
+    color: var(--ink-3);
+    opacity: 0.7;
+  }
+  50% {
+    color: var(--ink-2);
+    opacity: 1;
+  }
+}
+
+/* A single cell switching on — meter segments, coverage grids, any
+   block-by-block fill. Stepped rather than smooth so it reads as a discrete
+   unit being set, like a character printing. */
+@keyframes pixel-on {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   6. REDUCED MOTION
+   --------------------------------------------------------------------------
+   Binding: every animation and transition in the app is switched off here,
+   including component-local ones, so no module has to remember to do it.
+   Durations are collapsed rather than set to `none` so animation-fill-end
+   states (an element that animates in from opacity 0) still land visible.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   7. UTILITIES
+   --------------------------------------------------------------------------
+   Four only. Everything else belongs in a component's CSS Module — this is
+   not a utility framework, and a growing global namespace is how a design
+   system stops being enforceable.
+   ========================================================================== */
+
+/* Visible to screen readers, not to eyes. Used wherever a proof mark's
+   meaning is carried by a glyph ("−" / "+") that needs a spoken equivalent.
+
+   NOT for a <th> or <td>. This is position:absolute, and on a table cell that
+   removes the cell from the table box — the header row then lays out fewer
+   cells than the body has columns, and the header band and its rule stop short
+   of the table's edge. Keep the cell in flow and wrap only its text:
+   <th><span class="sr-only">offenders</span></th>. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Every figure, score, count, and date. Digits must not change width when a
+   value updates, or the column jitters while polling. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.serif {
+  font-family: var(--font-serif);
+}
+
+.mono {
+  font-family: var(--font-mono);
+}

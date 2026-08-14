@@ -1,0 +1,219 @@
+/* ==========================================================================
+   ResultsPanel — the review column
+   --------------------------------------------------------------------------
+   A stack of sheets, read top to bottom: the grade, the editor's note, the
+   marked-up proof, the checklist, the gaps, the artifact, the small print.
+   The cards are drawn by Panel / DiffPanel / RecommendationCard; this module
+   only owns the spacing between them and the score header's own figures.
+   ========================================================================== */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* --- score header ------------------------------------------------------- */
+
+.headFigures {
+  font-size: 11px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.meters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 28px;
+}
+
+@media (max-width: 560px) {
+  .meters {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Three small figures on a rule — pages, words, gates. */
+.figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.figures > div {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.figures dt {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.figures dd {
+  font-size: 13px;
+  color: var(--ink);
+}
+
+/* --- recommendation bodies ----------------------------------------------
+   RecommendationCard sets the voice of the card; these are the nodes we hand
+   it, so they only need to agree with it. */
+
+.recDetail {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.recDetail + .recDetail,
+.recDetail + .recQuotes,
+.recDetail + .recTerms {
+  margin-top: 8px;
+}
+
+/* The gate's own name, run in ahead of its sentence like a marginal keyword. */
+.recGate {
+  margin-right: 8px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.recQuotes {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* A quoted offending line: serif, because it is resume prose, with a change bar
+   in the margin — hairline weight, matching GateTable's quoted offenders and
+   the 1px grid the rest of the layout is drawn on. The "+ n more" tail is not a
+   quote, so it keeps the working voice and a neutral rule. */
+.recQuotes li:not(.recMore) {
+  padding: 1px 0 1px 10px;
+  border-left: 1px solid var(--flag);
+  font-family: var(--font-serif);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.recMore {
+  padding: 1px 0 1px 10px;
+  border-left: 1px solid var(--rule);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.recTerms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.recTerms li {
+  padding: 1px 8px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-pill);
+  background: var(--flag-wash);
+  color: var(--flag);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* --- artifact ----------------------------------------------------------- */
+
+.buttonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.previewToggle {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--ink-2);
+  transition: color var(--dur-1) var(--ease);
+}
+
+.previewToggle:hover {
+  color: var(--ink);
+}
+
+.previewChevron {
+  transition: transform var(--dur-2) var(--ease);
+}
+
+.previewToggle[aria-expanded="true"] .previewChevron {
+  transform: rotate(90deg);
+}
+
+.previewFrame {
+  width: 100%;
+  aspect-ratio: 8.5 / 11;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  background: var(--paper-2);
+  animation: fade-in var(--dur-2) var(--ease) both;
+}
+
+/* --- small print --------------------------------------------------------
+   Sits directly on the paper, not in a card: it is the printer's note at the
+   foot of the page. It includes the sanitizer's report of any invisible
+   characters removed, so it must always be visible. */
+
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+.notesTitle {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.notesList {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.notesList li {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+/* A list marker, so it needs to be visible: --rule-strong is a border colour
+   and measures under 2:1 as type. Meta ink keeps it quiet without erasing it. */
+.notesList li::before {
+  content: "—";
+  flex: none;
+  color: var(--ink-3);
+}

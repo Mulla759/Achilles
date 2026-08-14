@@ -1,0 +1,79 @@
+/* ==========================================================================
+   Meter — a figure with a rule under it
+   --------------------------------------------------------------------------
+   Ink, never a colour: two meters side by side must not look like a traffic
+   light. The verdict is stated in words by ReadyChip; this only has to be
+   readable and comparable.
+   ========================================================================== */
+
+.meter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.value {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.unit {
+  padding-left: 1px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.track {
+  position: relative;
+  height: 3px;
+  border-radius: var(--r-pill);
+  background: var(--rule);
+  overflow: visible;
+}
+
+.fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  /* Layout change, so the top of the ladder: 300ms. */
+  transition: width var(--dur-3) var(--ease);
+}
+
+/* The pass mark, overhanging the rule so it reads as a printer's registration
+   tick rather than a segment of the bar. */
+.tick {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  margin-left: -1px;
+  background: var(--rule-strong);
+}
+
+.note {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 10px;
+  color: var(--ink-3);
+}

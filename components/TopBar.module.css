@@ -1,0 +1,96 @@
+/* ==========================================================================
+   TopBar — the masthead
+   --------------------------------------------------------------------------
+   Sticky, opaque paper, one hairline underneath. "online" is ink, not colour:
+   a healthy service is the normal state, and normal states get no proof mark.
+   "offline" takes --del because something is broken — and it says the word.
+   ========================================================================== */
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px 10px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.name {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+
+.version {
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+.right {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--ink-3);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.model {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.online,
+.offline {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  flex: none;
+}
+
+.online {
+  color: var(--ink-3);
+}
+
+.offline {
+  color: var(--del);
+  font-weight: 500;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: currentColor;
+  /* Sits on the text baseline rather than the box centre, so it reads as a
+     printer's mark next to the word instead of a status LED. */
+  transform: translateY(-1px);
+  flex: none;
+}
+
+@media (max-width: 560px) {
+  .bar {
+    padding: 10px 16px 9px;
+  }
+
+  .model {
+    display: none;
+  }
+}

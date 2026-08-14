@@ -1,0 +1,88 @@
+/* ==========================================================================
+   StatusBar — the colophon
+   --------------------------------------------------------------------------
+   A single quiet line at the foot of the page. Sticky so the shortcuts stay
+   reachable while the review column is scrolled, but paper-coloured and
+   hairline-ruled so it never reads as a dashboard chrome bar.
+   ========================================================================== */
+
+.bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 7px 24px;
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+  font-size: 11px;
+  color: var(--ink-3);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.mode {
+  flex: none;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.hints {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: none;
+}
+
+.hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hints kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-ctl);
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.ready {
+  flex: none;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.readyIdle {
+  color: var(--ink-3);
+}
+
+/* Colour is the second signal here, never the first: the word after "ready"
+   already says yes or no. */
+.readyYes {
+  color: var(--ins);
+  font-weight: 500;
+}
+
+.readyNo {
+  color: var(--flag);
+  font-weight: 500;
+}
+
+@media (max-width: 720px) {
+  .bar {
+    gap: 14px;
+    padding: 7px 16px;
+  }
+
+  .hints {
+    gap: 10px;
+  }
+}

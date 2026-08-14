@@ -1,0 +1,51 @@
+/* ==========================================================================
+   ErrorBanner
+   --------------------------------------------------------------------------
+   The deletion wash, one hairline, and the word "error" in the mark's own ink.
+   The word carries it; the colour only confirms.
+
+   No coloured left edge. globals.css is explicit about why the marks are
+   ink + wash pairs and not coloured borders: a 2px coloured edge fights the
+   hairline grid the layout is drawn on and reads as a UI chrome accent — a
+   brand colour — which is exactly what this system forbids. The wash plus the
+   tag plus role="alert" say it three times over without one.
+   ========================================================================== */
+
+.banner {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 11px 14px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  background: var(--del-wash);
+  animation: fade-in var(--dur-2) var(--ease) both;
+}
+
+.line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.tag {
+  flex: none;
+  width: 5ch;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--del);
+}
+
+.tagHint {
+  color: var(--ink-3);
+}
+
+.text {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+  min-width: 0;
+}
