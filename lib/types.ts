@@ -128,10 +128,22 @@ export interface BuildResult {
 // Endpoint payloads
 // --------------------------------------------------------------------------
 
+export interface ProviderInfo {
+  id: string;
+  label: string;
+  model: string;
+}
+
 export interface HealthResponse {
   ok: boolean;
   version: string;
+  /** The server key's provider. "" on a bring-your-own-key deployment. */
+  provider?: string;
+  /** The server key's default model. "" on a bring-your-own-key deployment. */
   model: string;
+  /** Every provider this deployment can call. Absent on an older backend. */
+  providers?: ProviderInfo[];
+  renderer?: string;
   byo_key_only: boolean;
   server_key: boolean;
 }
@@ -157,6 +169,10 @@ export interface TailorRequest {
   availability?: string;
   company_url?: string;
   api_key?: string;
+  /** Only needed for a key whose shape matches no known provider. */
+  provider?: string;
+  /** Only honoured alongside `api_key`; sending it without one is a 400. */
+  model?: string;
   max_passes?: number;
 }
 

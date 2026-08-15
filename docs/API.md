@@ -17,11 +17,26 @@ show the "bring your own key" field as required or optional.
 200 {
   "ok": true,
   "version": "0.1.0",
+  "provider": "anthropic",  // "" when no server key resolves — see below
   "model": "claude-opus-5",
+  "providers": [            // every provider the deployment can call
+    { "id": "anthropic", "label": "Anthropic", "model": "claude-opus-5" },
+    { "id": "openai",    "label": "OpenAI",    "model": "gpt-5" }
+    // ...
+  ],
+  "renderer": "typst",
   "byo_key_only": false,   // if true, the UI must collect a key
   "server_key": true       // a server-side key is configured
 }
 ```
+
+`provider` and `model` describe the *server's* key. Both are `""` on a
+bring-your-own-key deployment, where the provider is decided per request from
+whichever key the visitor pastes — render "unknown" rather than a blank.
+
+`server_key` answers "is a key configured", not "will this deployment spend
+it": a host can have a key and still set `byo_key_only`. The UI must require a
+key when `byo_key_only || !server_key`.
 
 ---
 
@@ -67,9 +82,19 @@ The main event: rewrite → render → grade, looping until it passes or
   // Reserved. Accepted and ignored today — nothing reads it yet.
   "company_url": "https://...",
   "api_key": "sk-ant-...",                 // optional; falls back to server key
+  "provider": "openai",                    // optional; inferred from the key shape
+  "model": "gpt-5",                        // optional; requires api_key (see below)
   "max_passes": 3                          // optional, 1-5
 }
 ```
+
+A key from any supported provider works — `provider` only needs setting for a
+gateway or self-hosted key whose shape matches nothing known. Run
+`achilles providers`, or read `/api/health`'s `providers` list, for the ids.
+
+`model` is only honoured alongside a caller-supplied `api_key`. Sending a model
+without a key is a `400 bad_input`, not a silent fallback: otherwise an
+anonymous request could point the server's key at the priciest model available.
 
 ```jsonc
 // 200 — BuildResult
