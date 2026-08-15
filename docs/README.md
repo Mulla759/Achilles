@@ -13,8 +13,9 @@ Two more docs live outside this folder, both because a tool reads them by name:
 
 - `../CLAUDE.md` — orientation for an AI agent working in this repo. Must be at
   the root; that is where Claude Code looks for it.
-- `../components/README.md` — the frontend component conventions, colocated
-  with the components it describes.
+- `../components/README.md` — the UI token contract: the CSS custom properties
+  defined in `app/globals.css` that every component consumes, and the reason
+  there is no Tailwind here. Colocated with the components it governs.
 
 ## Keeping these honest
 
