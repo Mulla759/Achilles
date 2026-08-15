@@ -261,7 +261,7 @@ handler code Vercel runs in production.
 
 ## More
 
-- `HANDOFF.md` — the operator's guide: tuning the rubric, extending the keyword
+- `docs/HANDOFF.md` — the operator's guide: tuning the rubric, extending the keyword
   ontology, and the grounding rules
 - `docs/API.md` — the HTTP contract
 - `CLAUDE.md` — orientation for an AI agent working in this repo

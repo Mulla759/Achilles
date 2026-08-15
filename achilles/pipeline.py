@@ -1,6 +1,6 @@
 """The multi-pass loop: tailor -> render -> grade -> repair.
 
-This is the automated version of the manual loop in HANDOFF.md §1. Each pass
+This is the automated version of the manual loop in docs/HANDOFF.md §1. Each pass
 costs one Claude call, so we stop the moment the result is shippable rather
 than always burning `max_passes`.
 """
@@ -79,6 +79,7 @@ def build(
     resume_text: str | None = None,
     availability: str = "",
     api_key: str | None = None,
+    provider: str | None = None,
     settings: Settings | None = None,
     max_passes: int | None = None,
     template: Path | None = None,
@@ -106,10 +107,13 @@ def build(
             hint="Paste your current resume, or upload it as a .txt file.",
         )
 
-    key = settings.resolve_key(api_key)
+    resolution = settings.resolve(api_key, provider=provider)
     passes_allowed = max(1, min(5, max_passes or settings.max_passes))
 
     notes: list[str] = []
+    # Which model produced this draft is part of reading it — the rubric is
+    # calibrated on Opus 5 and other models land differently against it.
+    notes.append(f"Tailored with {resolution.provider.label} ({resolution.model}).")
     notes.extend(describe_removals(raw_jd, jd_text))
     if raw_resume_text:
         notes.extend(describe_removals(raw_resume_text, resume_text or ""))
@@ -120,7 +124,7 @@ def build(
             "Check you pasted the qualifications section."
         )
 
-    source = resume or parse_resume(resume_text or "", api_key=key, settings=settings)
+    source = resume or parse_resume(resume_text or "", resolution=resolution)
 
     best: BuildResult | None = None
     prior_scan: ScanReport | None = None
@@ -137,8 +141,7 @@ def build(
             keywords=keywords,
             prior_scan=prior_scan,
             prior_rubric=prior_rubric,
-            api_key=key,
-            settings=settings,
+            resolution=resolution,
         )
 
         rendered, render_notes = render_one_page(candidate, template=template)

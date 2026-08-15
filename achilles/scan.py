@@ -1,7 +1,7 @@
 """Deterministic keyword-coverage scan. No LLM, sub-millisecond.
 
 The core trick — collapsing all whitespace (including newlines) to a single
-space before matching — comes straight from `ats_scan.py`: real ATS parsers
+space before matching — comes straight from `scripts/ats_scan.py`: real ATS parsers
 extract PDF text as a stream, so a term that happens to wrap across a line
 break in the rendered resume ("cross-\nfunctional") still reads as one
 contiguous string to the parser, and this scan needs to see it the same way.

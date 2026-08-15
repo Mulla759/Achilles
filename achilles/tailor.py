@@ -1,5 +1,9 @@
-"""The Claude calls: parse a pasted resume into structure, then rewrite it
+"""The two model calls: parse a pasted resume into structure, then rewrite it
 against a job description.
+
+Which provider serves them is `achilles/providers/`'s problem, not this
+module's. Everything here — both prompts, the grounding audit — is written
+once and runs identically on Claude, GPT, Gemini, or DeepSeek.
 
 Two rules shape everything here:
 
@@ -17,11 +21,9 @@ from __future__ import annotations
 
 import re
 
-import anthropic
-
-from .config import Settings
-from .errors import InputError, UpstreamError
+from .errors import InputError
 from .models import Keyword, Resume, RubricReport, ScanReport
+from .providers import Resolution, structured_call
 
 # The system prompt is byte-stable so it caches (Opus 5 caches from 512 tokens),
 # which matters because a multi-pass build re-sends it every pass.
@@ -104,56 +106,16 @@ block is ambiguous, prefer experience. Put technology tag lines into the entry's
 _NUM = re.compile(r"\d[\d,.]*\s*(?:%|k\b|m\b|x\b|\+)?", re.IGNORECASE)
 
 
-def _client(api_key: str) -> anthropic.Anthropic:
-    # Two retries on 429/5xx is the SDK default and is what we want; a tailor
-    # call is expensive enough that failing fast helps nobody.
-    return anthropic.Anthropic(api_key=api_key, timeout=600.0)
+def _call(resolution: Resolution, *, system: str, user: str) -> Resume:
+    return structured_call(
+        resolution=resolution,
+        output_model=Resume,
+        system=system,
+        user=user,
+    )
 
 
-def _call(
-    client: anthropic.Anthropic,
-    settings: Settings,
-    *,
-    system: str,
-    user: str,
-) -> Resume:
-    try:
-        response = client.messages.parse(
-            model=settings.model,
-            max_tokens=20000,
-            system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
-            output_format=Resume,
-            output_config={"effort": settings.effort},
-            messages=[{"role": "user", "content": user}],
-        )
-    except anthropic.AuthenticationError as exc:
-        raise UpstreamError(
-            "Anthropic rejected the API key.",
-            hint="Check the key is current and has credit at console.anthropic.com.",
-        ) from exc
-    except anthropic.RateLimitError as exc:
-        raise UpstreamError(
-            "Rate limited by the Anthropic API.",
-            hint="Wait a moment and try again, or use your own API key.",
-        ) from exc
-    except anthropic.APIStatusError as exc:
-        raise UpstreamError(f"Anthropic API error ({exc.status_code}): {exc.message}") from exc
-    except anthropic.APIConnectionError as exc:
-        raise UpstreamError("Could not reach the Anthropic API.") from exc
-
-    if response.stop_reason == "refusal":
-        raise UpstreamError(
-            "The model declined this request.",
-            hint="This usually means the pasted text tripped a safety filter. Try again "
-            "with just the resume and job description.",
-        )
-    parsed = response.parsed_output
-    if parsed is None:
-        raise UpstreamError("The model returned no structured output.")
-    return parsed
-
-
-def parse_resume(text: str, *, api_key: str, settings: Settings) -> Resume:
+def parse_resume(text: str, *, resolution: Resolution) -> Resume:
     """Pasted plain text -> structured Resume."""
     if len(text.strip()) < 80:
         raise InputError(
@@ -161,8 +123,7 @@ def parse_resume(text: str, *, api_key: str, settings: Settings) -> Resume:
             hint="Paste the full text of your current resume, including your bullets.",
         )
     return _call(
-        _client(api_key),
-        settings,
+        resolution,
         system=_PARSE_SYSTEM,
         user=f"<resume>\n{text.strip()}\n</resume>\n\nConvert this to structured JSON.",
     )
@@ -177,8 +138,7 @@ def tailor(
     keywords: list[Keyword] | None = None,
     prior_scan: ScanReport | None = None,
     prior_rubric: RubricReport | None = None,
-    api_key: str,
-    settings: Settings,
+    resolution: Resolution,
 ) -> Resume:
     """Rewrite `resume` against the JD, optionally repairing a prior pass."""
     blocks: list[str] = [
@@ -223,7 +183,7 @@ def tailor(
     blocks.append(
         "Rewrite the resume for this role. Return the complete structured resume."
     )
-    return _call(_client(api_key), settings, system=SYSTEM, user="\n\n".join(blocks))
+    return _call(resolution, system=SYSTEM, user="\n\n".join(blocks))
 
 
 def audit_grounding(source: Resume, output: Resume) -> list[str]:

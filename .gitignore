@@ -6,6 +6,13 @@
 *.key
 .vercel
 
+# ---------- local agent config ----------
+# Which MCP servers you run is a local choice, and committing it makes every
+# cloner's agent try to install servers they never asked for. Copy the example
+# if you want the pagecast/pdfspark pair this repo was built with.
+.mcp.json
+!.mcp.json.example
+
 # ---------- personal data ----------
 # Your real resume carries your phone number, email, and full work history.
 # It lives on disk and never enters git; `profiles/example.json` is the only

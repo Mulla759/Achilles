@@ -85,7 +85,22 @@ def _tailor(body: dict[str, Any]) -> dict[str, Any]:
 
     availability = require_str(body, "availability")
     api_key = require_str(body, "api_key")
+    provider = require_str(body, "provider")
+    model = require_str(body, "model")
     passes = _parse_max_passes(body.get("max_passes"))
+
+    settings = load_settings()
+    if model:
+        # Per-request model override. Only honoured alongside a caller-supplied
+        # key: letting an anonymous request pick the model would let anyone
+        # spend the server's credits on the most expensive one available.
+        if not api_key:
+            raise InputError(
+                "A model can only be chosen when you bring your own API key.",
+                hint="Add your key to the request, or drop the `model` field to use "
+                "this deployment's default.",
+            )
+        settings.model = model
 
     result = build(
         jd_text=jd_text,
@@ -94,7 +109,8 @@ def _tailor(body: dict[str, Any]) -> dict[str, Any]:
         resume_text=resume_text or None,
         availability=availability,
         api_key=api_key or None,
-        settings=load_settings(),
+        provider=provider or None,
+        settings=settings,
         max_passes=passes,
     )
     return build_payload(result)

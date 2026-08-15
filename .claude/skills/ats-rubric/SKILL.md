@@ -87,7 +87,7 @@ against a real JD in the target domain to sanity-check before relying on it.
 ### Why a JD's coverage % might look wrong
 
 - **A real gap** — the JD wants something not in the resume and it's true;
-  don't force it, see `HANDOFF.md` §4.
+  don't force it, see `docs/HANDOFF.md` §4.
 - **A synonym the ontology doesn't have** — add the missing `forms` entry
   (above) rather than editing the resume to use unnatural phrasing.
 - **A domain the ontology doesn't cover at all** — an exotic JD may under-

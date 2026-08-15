@@ -16,7 +16,7 @@ and understanding it is what lets you trust the automated version.
 - `achilles/keywords.py` — the JD keyword ontology (extend this to re-point coverage)
 - `achilles/rubric.py` — the 7 hard gates and their thresholds
 - `profiles/*.json` — your structured resume data (gitignored except `example.json`)
-- `HANDOFF.md` — this guide
+- `docs/HANDOFF.md` — this guide
 
 ---
 
@@ -178,7 +178,7 @@ whitespace the way real parsers do (collapses all whitespace, including line
 breaks, to a single space — so "cross-\nfunctional" still matches "cross
 functional"), and checks each `Keyword`'s accepted surface forms against it.
 It's a straight port of the original prototype's core insight (still present
-at the repo root as `ats_scan.py`, kept for reference — `achilles/scan.py` is
+as `scripts/ats_scan.py`, kept for reference — `achilles/scan.py` is
 what the pipeline actually calls now).
 
 **Where the keywords come from — it's automatic now.** The original process
@@ -269,7 +269,7 @@ headers. Fully covered: AI agents / agentic, LLM, prompt engineering, RAG,
 tool calling, agent frameworks, evaluation design, resolution rate, service
 quality, A/B testing, SQL, user research, pain points, experimentation. This
 predates the ontology-driven `achilles/keywords.py` (it came from the
-original hand-edited `ats_scan.py` `groups` dict) but the coverage bar it set
+original hand-edited `scripts/ats_scan.py` `groups` dict) but the coverage bar it set
 — 100% required, ~95%+ overall — is exactly what `BuildResult.ready` still
 enforces today.
 

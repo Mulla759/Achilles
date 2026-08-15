@@ -29,7 +29,7 @@ is hit.
 | `api/*.py` | Thin Vercel `BaseHTTPRequestHandler` wrappers around `achilles/` (`api/_lib.py` is the shared JSON/error plumbing, not itself routed). |
 | `app/`, `components/`, `lib/` | Next.js frontend — owned by the frontend work, not this document's authority. |
 | `docs/API.md` | The HTTP contract. Authoritative for request/response shapes. |
-| `HANDOFF.md` | Operator's guide to the tailoring loop, template editing, and the grounding rules. |
+| `docs/HANDOFF.md` | Operator's guide to the tailoring loop, template editing, and the grounding rules. |
 
 ## Invariants — do not break these
 

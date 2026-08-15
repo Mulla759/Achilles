@@ -32,23 +32,25 @@ class InputError(AchillesError):
 
 
 class MissingKeyError(AchillesError):
-    """No Anthropic API key available from any source."""
+    """No usable API key available from any source, for any provider."""
 
     http_status = 401
     code = "missing_api_key"
 
-    def __init__(self, message: str = "No Anthropic API key configured.") -> None:
+    def __init__(self, message: str = "No API key configured.") -> None:
         super().__init__(
             message,
             hint=(
-                "Set ANTHROPIC_API_KEY in .env.local, or paste your own key into "
-                "the key field. Get one at console.anthropic.com/settings/keys."
+                "Paste a key into the key field, or set one in .env.local — "
+                "ACHILLES_API_KEY works for any provider, and ANTHROPIC_API_KEY, "
+                "OPENAI_API_KEY, GEMINI_API_KEY, DEEPSEEK_API_KEY, GROQ_API_KEY, "
+                "XAI_API_KEY, and OPENROUTER_API_KEY are each picked up too."
             ),
         )
 
 
 class UpstreamError(AchillesError):
-    """The Claude API refused, rate-limited, or fell over."""
+    """The model provider refused, rate-limited, or fell over."""
 
     http_status = 502
     code = "upstream_error"

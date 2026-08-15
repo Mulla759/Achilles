@@ -16,7 +16,7 @@ already in the source resume. You may re-express, re-emphasize, re-order,
 merge, split, and re-title. You may NOT add a job, a technology, a
 credential, or a number that isn't already there. If the JD wants something
 the candidate doesn't have, leave the gap open — a gap is survivable, a
-fabrication discovered in an interview is not. See `HANDOFF.md` §4 for the
+fabrication discovered in an interview is not. See `docs/HANDOFF.md` §4 for the
 full grounding rules (one number and stick to it, MAC bullet shape,
 restating vs. manufacturing precision).
 
@@ -72,12 +72,12 @@ restating vs. manufacturing precision).
 
 6. **Before calling it done**, confirm: availability dates are current, every
    employment/education end date (especially an open-ended "Present") is
-   accurate, and every note in the output has been read — see HANDOFF.md
+   accurate, and every note in the output has been read — see docs/HANDOFF.md
    §5's "Before you send" checklist.
 
 ## Related
 
-- `HANDOFF.md` — full operator's guide, including the manual (non-automated)
+- `docs/HANDOFF.md` — full operator's guide, including the manual (non-automated)
   version of this loop for debugging a single stubborn gate.
 - `.claude/skills/ats-rubric/SKILL.md` — how the 7 gates and the keyword
   ontology actually work, for tuning thresholds or adding new keywords.

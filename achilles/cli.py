@@ -19,6 +19,7 @@ from pathlib import Path
 from .config import load_settings
 from .errors import AchillesError
 from .models import Resume
+from .providers import describe
 from .render import BACKENDS, active_backend, load_resume, render_one_page
 
 GREEN, RED, DIM, BOLD, RESET = "\033[32m", "\033[31m", "\033[2m", "\033[1m", "\033[0m"
@@ -53,7 +54,11 @@ def _cmd_import(args: argparse.Namespace) -> int:
     from .tailor import parse_resume
 
     settings = load_settings()
-    resume = parse_resume(_read(args.resume), api_key=settings.resolve_key(), settings=settings)
+    if args.model:
+        settings.model = args.model
+    resolution = settings.resolve(args.api_key, provider=args.provider)
+    print(f"{DIM}using {resolution.summary}{RESET}", file=sys.stderr)
+    resume = parse_resume(_read(args.resume), resolution=resolution)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(resume.model_dump_json(indent=2), encoding="utf-8")
@@ -98,6 +103,10 @@ def _cmd_scan(args: argparse.Namespace) -> int:
 def _cmd_tailor(args: argparse.Namespace) -> int:
     from .pipeline import build
 
+    settings = load_settings()
+    if args.model:
+        settings.model = args.model
+
     resume: Resume | None = load_resume(args.profile) if args.profile else None
     result = build(
         jd_text=_read(args.jd),
@@ -105,6 +114,9 @@ def _cmd_tailor(args: argparse.Namespace) -> int:
         resume=resume,
         resume_text=_read(args.resume) if args.resume else None,
         availability=args.availability or "",
+        api_key=args.api_key,
+        provider=args.provider,
+        settings=settings,
         max_passes=args.passes,
     )
 
@@ -127,6 +139,36 @@ def _cmd_tailor(args: argparse.Namespace) -> int:
     return 0 if result.ready else 1
 
 
+def _add_model_flags(p: argparse.ArgumentParser) -> None:
+    """Flags shared by every subcommand that spends a model call.
+
+    `--api-key` is here for one-off runs against a different account. It is a
+    convenience, not the recommended path: an argv key is visible in `ps` and
+    lands in shell history, so the environment stays the documented way in.
+    """
+    ids = ", ".join(i for i, _, _ in describe())
+    p.add_argument(
+        "--provider",
+        help=f"model provider ({ids}); defaults to $ACHILLES_PROVIDER, else inferred "
+        "from the key",
+    )
+    p.add_argument("--model", help="model id; defaults to $ACHILLES_MODEL, else the "
+                   "provider's default")
+    p.add_argument("--api-key", help="key to use for this run (prefer the environment)")
+
+
+def _cmd_providers(_args: argparse.Namespace) -> int:
+    print(f"{BOLD}{'provider':<12} {'label':<20} default model{RESET}")
+    for pid, label, model in describe():
+        print(f"{pid:<12} {label:<20} {model}")
+    print(
+        f"\n{DIM}Set ACHILLES_PROVIDER to pick one explicitly, or just paste a key —\n"
+        f"the provider is inferred from the key's shape. ACHILLES_MODEL overrides\n"
+        f"the default model. The rubric is calibrated on Anthropic's Opus 5.{RESET}"
+    )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="achilles", description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -134,7 +176,11 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("import", help="parse a pasted resume into a JSON profile")
     p.add_argument("--resume", required=True, help="path to plain-text resume")
     p.add_argument("--out", default="profiles/me.json")
+    _add_model_flags(p)
     p.set_defaults(fn=_cmd_import)
+
+    p = sub.add_parser("providers", help="list supported model providers")
+    p.set_defaults(fn=_cmd_providers)
 
     p = sub.add_parser("render", help="compile a profile to PDF (no LLM)")
     p.add_argument("--profile", required=True)
@@ -161,6 +207,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--passes", type=int, default=None)
     p.add_argument("--out", default="out")
     p.add_argument("--slug", help="output filename stem (defaults to the role)")
+    _add_model_flags(p)
     p.set_defaults(fn=_cmd_tailor)
 
     args = parser.parse_args(argv)
