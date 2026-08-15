@@ -16,20 +16,26 @@ is hit.
 | Module | Owns |
 |---|---|
 | `achilles/models.py` | The data contract: `Resume`, `Keyword`, `ScanReport`, `RubricReport`, `BuildResult`. Every stage speaks these types. |
-| `achilles/tailor.py` | The two Claude calls (`parse_resume`, `tailor`) and their system prompts; `audit_grounding()` (advisory, non-LLM). |
+| `achilles/tailor.py` | The two model calls (`parse_resume`, `tailor`) and their system prompts; `audit_grounding()` (advisory, non-LLM). Provider-agnostic — it calls `providers.structured_call()`. |
+| `achilles/providers/` | The only place that knows one vendor from another. `__init__.py` holds `REGISTRY`, `resolve()` (key → provider inference), and `structured_call()`; `base.py` the `Provider` dataclass; `keys.py` key-shape identification and `redact()`; `schema.py` the two JSON-schema dialects; `anthropic_api.py` / `openai_api.py` / `google_api.py` the transports. |
 | `achilles/keywords.py` | JD text -> `Keyword[]`. Pure Python, hardcoded ontology (`ONTOLOGY`), no LLM. |
 | `achilles/scan.py` | `Keyword[]` + extracted text -> `ScanReport`. Whitespace-collapse substring matching, no LLM. |
 | `achilles/rubric.py` | `Resume` + extracted text + page count -> `RubricReport` (7 gates). Regex/heuristic, no LLM. |
-| `achilles/render.py` | `Resume` -> Typst source -> PDF -> extracted text, via the `typst` and `pypdf` PyPI packages. Owns the one-page density ladder. |
+| `achilles/render.py` | `Resume` -> Typst source -> PDF -> extracted text, via the `typst` and `pypdf` PyPI packages. Owns the one-page density ladder and the backend switch (`active_backend()`). |
+| `achilles/html_render.py`, `achilles/pdfspark.py` | The alternate PDF backend (`ACHILLES_RENDERER=pdfspark`) — HTML/CSS instead of Typst, rendered by a third-party service. Off by default; the default path is local and offline. |
+| `achilles/sanitize.py` | Cleans untrusted input (invisible characters, bidi overrides, control characters) before any stage reads it, and reports what it removed. |
+| `achilles/tui/` | **Unfinished, unreferenced.** Dependency-free terminal primitives (`term.py`: raw keys + ANSI; `widgets.py`: boxes, meters, visible-width arithmetic). No entry point and no `__init__.py`. See `docs/STATUS.md` §3 before building on it or deleting it. |
 | `achilles/pipeline.py` | Orchestrates the multi-pass loop (`build()`) and the no-LLM grading path (`score_only()`). |
 | `achilles/cli.py` | `achilles import\|render\|scan\|tailor`. |
 | `achilles/config.py` | `Settings` — env var resolution, API key fallback order. |
 | `achilles/errors.py` | Typed exceptions, each with an `http_status` and a user-facing `hint`. |
 | `templates/typist.typ` | The one Typst template. Single column. Data-driven via `sys.inputs.resume` (JSON) — never string-interpolated. |
-| `api/*.py` | Thin Vercel `BaseHTTPRequestHandler` wrappers around `achilles/` (`api/_lib.py` is the shared JSON/error plumbing, not itself routed). |
-| `app/`, `components/`, `lib/` | Next.js frontend — owned by the frontend work, not this document's authority. |
+| `api/*.py` | Thin Vercel `BaseHTTPRequestHandler` wrappers around `achilles/` (`api/_lib.py` is the shared JSON/error plumbing and `api/_guard.py` the origin allowlist + per-IP rate limit — neither is itself routed). |
+| `app/`, `components/`, `lib/` | Next.js frontend — owned by the frontend work, not this document's authority. `lib/types.ts` mirrors `achilles/models.py` by hand; nothing enforces that they agree. |
+| `scripts/` | Developer tooling, not part of the package. `devapi.py` is the local Python API server `npm run dev` shells out to; `ats_scan.py` is the original prototype scanner, kept for reference; `snapshot_ui.py` screenshots the web UI; `review-prompt.md` is a saved code-review prompt. |
 | `docs/API.md` | The HTTP contract. Authoritative for request/response shapes. |
 | `docs/HANDOFF.md` | Operator's guide to the tailoring loop, template editing, and the grounding rules. |
+| `docs/STATUS.md` | **Read this first.** What shipped in each commit, the current three-layer shape, and the open threads. Start here when picking the repo up cold. |
 
 ## Invariants — do not break these
 

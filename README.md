@@ -35,7 +35,10 @@ fabrication you can't defend in an interview is not.
 ## Quickstart
 
 You need Python 3.11+ and Node 20+. Get an API key from
-[console.anthropic.com](https://console.anthropic.com/settings/keys).
+[console.anthropic.com](https://console.anthropic.com/settings/keys) — or bring
+a key from any of the seven other supported providers (see
+[Model providers](#model-providers)); Achilles works out which one it is from
+the key itself.
 
 ```bash
 git clone <this repo> && cd Achilles
@@ -169,12 +172,43 @@ Everything optional except the key.
 | Variable | Default | Meaning |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | — | Your key. Used when a visitor doesn't bring their own. |
-| `ACHILLES_MODEL` | `claude-opus-5` | The rubric thresholds are tuned against this model. |
+| `ACHILLES_API_KEY` | — | Provider-neutral alternative, if you switch providers often. |
+| `ACHILLES_PROVIDER` | inferred | Names the provider explicitly. Only needed for gateway or self-hosted keys whose shape isn't recognisable. |
+| `ACHILLES_MODEL` | per provider | Overrides the provider's default model. The rubric thresholds are tuned against `claude-opus-5`. |
 | `ACHILLES_EFFORT` | `high` | `low` \| `medium` \| `high` \| `xhigh` \| `max` |
 | `ACHILLES_MAX_PASSES` | `3` | Rewrite→grade cycles for the CLI. |
 | `ACHILLES_BYO_KEY_ONLY` | `0` | Set to `1` on a public deploy so visitors must use their own key. |
 | `ACHILLES_RENDERER` | `typst` | `typst` or `pdfspark`. |
 | `ACHILLES_ALLOWED_ORIGINS` | — | Comma-separated origins allowed to call the API cross-site. |
+
+---
+
+## Model providers
+
+Eight, and you don't pick one — Achilles reads the shape of your key and
+routes accordingly (`sk-ant-` → Anthropic, and so on).
+
+| Provider | Key from | Env var |
+|---|---|---|
+| Anthropic | console.anthropic.com | `ANTHROPIC_API_KEY` |
+| OpenAI | platform.openai.com | `OPENAI_API_KEY` |
+| Google AI Studio | aistudio.google.com | `GEMINI_API_KEY` |
+| DeepSeek | platform.deepseek.com | `DEEPSEEK_API_KEY` |
+| Groq | console.groq.com | `GROQ_API_KEY` |
+| xAI | console.x.ai | `XAI_API_KEY` |
+| OpenRouter | openrouter.ai | `OPENROUTER_API_KEY` |
+| GitHub Models | github.com/settings/tokens | `GITHUB_MODELS_TOKEN` |
+
+`achilles providers` lists them with their default models.
+
+**One caveat worth knowing:** the rubric thresholds were calibrated against
+Claude Opus 5. The others tailor perfectly well, but they fail the word-choice
+gate somewhat more often, which costs an extra repair pass. Same output
+quality, slightly more work to get there.
+
+`GITHUB_TOKEN` is deliberately ignored — CI sets it automatically for
+unrelated reasons, and quietly routing a build's Actions token to an inference
+endpoint is a surprise nobody wants. GitHub Models is opt-in by name.
 
 ---
 
@@ -236,7 +270,7 @@ Two things to know before a public deploy:
 
 ```bash
 npm run dev        # web UI + Python API together
-npm run test       # 123 tests
+npm run test       # the Python suite; no API key needed
 npm run typecheck
 npm run build
 ```
@@ -261,6 +295,8 @@ handler code Vercel runs in production.
 
 ## More
 
+- `docs/STATUS.md` — engineering handoff: what shipped, how the pieces fit, and
+  what's still open. Start here if you're picking the repo up cold
 - `docs/HANDOFF.md` — the operator's guide: tuning the rubric, extending the keyword
   ontology, and the grounding rules
 - `docs/API.md` — the HTTP contract

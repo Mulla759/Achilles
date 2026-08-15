@@ -2,6 +2,10 @@
 # Deliberately tiny and pure-pip: `typst` ships prebuilt Rust wheels, so there is
 # no external `typst` binary and no `pdftotext`/poppler dependency anywhere.
 anthropic>=0.69,<1.0
+# Direct dependency: every non-Anthropic provider posts over httpx
+# (`achilles/providers/base.py`). Pinned here rather than left to `anthropic`'s
+# transitive pull, which would break all seven other providers if it ever moved.
+httpx>=0.25,<1.0
 typst>=0.13,<1.0
 pypdf>=5.1,<7.0
 pydantic>=2.9,<3.0

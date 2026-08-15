@@ -7,8 +7,9 @@ POST the resulting self-contained document to `from-html`.
 
     python scripts/snapshot_ui.py --url http://localhost:3000 --out out/ui.pdf
 
-This is a visual smoke test: it proves the TUI's own CSS produces the intended
-layout in a real Chromium, without needing a local browser install.
+This is a visual smoke test: it proves the web UI's own CSS produces the
+intended layout in a real Chromium, without needing a local browser install.
+(It has nothing to do with `achilles/tui/`, which is the *terminal* UI.)
 """
 
 from __future__ import annotations

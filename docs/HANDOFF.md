@@ -4,7 +4,14 @@ A repeatable process for pointing a one-page Typst resume at any job
 description (JD), keeping it truthful, and scoring it to a high ATS coverage
 before you submit. This is the operator's guide — for the HTTP contract see
 `docs/API.md`, for the data contract see `achilles/models.py`, for an AI
-agent's map of the repo see `CLAUDE.md`.
+agent's map of the repo see `CLAUDE.md`, and for the engineering handoff (what
+shipped, what's still open) see `docs/STATUS.md`.
+
+> **One thing this guide predates.** Where it says "Claude", read "the
+> configured provider". `achilles/tailor.py` no longer calls Anthropic
+> directly — it goes through `achilles/providers/`, which supports eight
+> backends and picks one from your key's shape. The tailoring *process* and
+> the grounding rules below are unchanged and still authoritative.
 
 The engine now does most of this loop automatically (`achilles tailor` or
 `POST /api/tailor`). This guide covers both the automated path and the manual
