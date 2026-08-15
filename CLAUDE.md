@@ -11,6 +11,39 @@ source. A deterministic keyword scanner and a 7-gate rubric grade the result;
 the pipeline loops tailor -> render -> grade until it passes or a pass limit
 is hit.
 
+## Repo layout — where to look first
+
+```
+achilles/          the Python engine (the package that pip installs)
+  providers/       the only vendor-aware code; everything above it is provider-agnostic
+  tui/             unfinished terminal primitives — nothing imports these yet
+api/               Vercel serverless handlers; thin wrappers over achilles/
+app/               Next.js routes (App Router)
+components/        React components, each with a colocated .module.css
+lib/               frontend helpers; lib/types.ts hand-mirrors achilles/models.py
+templates/         typist.typ — the one resume template
+profiles/          resume JSON; only example.json is committed, the rest are gitignored
+tests/             pytest suite; runs with no API key
+scripts/           dev tooling, not shipped in the package
+docs/              all prose documentation — API.md, HANDOFF.md, STATUS.md
+.claude/skills/    repo-specific agent skills (rubric, tailoring, Typst)
+.github/workflows/ CI: ruff + pytest + tsc
+```
+
+**Everything at the repo root is there because its tooling requires it — do
+not tidy these into folders.** `pyproject.toml` (pip/hatchling),
+`requirements.txt` (the Vercel Python runtime discovers it at root),
+`package.json` / `package-lock.json` / `tsconfig.json` / `next.config.mjs` /
+`next-env.d.ts` (npm and Next.js), `vercel.json` (Vercel reads it only at
+root, and its `api/**/*.py` and `includeFiles` globs are root-relative),
+`.gitignore`, `README.md`, `LICENSE`, and `CLAUDE.md` (this file, read at
+root). `.env.example` and `.mcp.json.example` sit at root because the real
+files they are copied to — `.env.local` and `.mcp.json` — are read from root.
+
+The rule that follows from this: **prose goes in `docs/`, config stays at
+root.** If you are adding a document, it belongs in `docs/` unless a tool
+looks for it by name somewhere else.
+
 ## Module map
 
 | Module | Owns |
@@ -26,7 +59,7 @@ is hit.
 | `achilles/sanitize.py` | Cleans untrusted input (invisible characters, bidi overrides, control characters) before any stage reads it, and reports what it removed. |
 | `achilles/tui/` | **Unfinished, unreferenced.** Dependency-free terminal primitives (`term.py`: raw keys + ANSI; `widgets.py`: boxes, meters, visible-width arithmetic). No entry point and no `__init__.py`. See `docs/STATUS.md` §3 before building on it or deleting it. |
 | `achilles/pipeline.py` | Orchestrates the multi-pass loop (`build()`) and the no-LLM grading path (`score_only()`). |
-| `achilles/cli.py` | `achilles import\|render\|scan\|tailor`. |
+| `achilles/cli.py` | `achilles import\|providers\|render\|scan\|tailor`. |
 | `achilles/config.py` | `Settings` — env var resolution, API key fallback order. |
 | `achilles/errors.py` | Typed exceptions, each with an `http_status` and a user-facing `hint`. |
 | `templates/typist.typ` | The one Typst template. Single column. Data-driven via `sys.inputs.resume` (JSON) — never string-interpolated. |
