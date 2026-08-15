@@ -1,5 +1,7 @@
 # Achilles
 
+[![CI](https://github.com/Mulla759/Achilles/actions/workflows/ci.yml/badge.svg)](https://github.com/Mulla759/Achilles/actions/workflows/ci.yml)
+
 Paste a job description and your old resume. Get back a tailored, one-page PDF
 and a score telling you whether it's actually ready to send.
 
@@ -274,6 +276,11 @@ npm run test       # the Python suite; no API key needed
 npm run typecheck
 npm run build
 ```
+
+CI runs `ruff check .`, `pytest -q`, and `npm run typecheck` on every push to
+`main` and every pull request (`.github/workflows/ci.yml`). No API key is
+configured there — the suite covers the no-LLM core, so it stays runnable
+without credentials.
 
 The Python API runs through `scripts/devapi.py` in development, using the same
 handler code Vercel runs in production.

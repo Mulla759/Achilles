@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A second push to the same branch makes the first run's answer irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: lint + test (python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          # Matches the local dev venv. The package declares >=3.11; if you
+          # want the floor covered too, this is the place to add a matrix.
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - run: pip install -e ".[dev]"
+
+      - run: ruff check .
+
+      # No API key here on purpose: the whole no-LLM core — keywords, scan,
+      # rubric, render, sanitize — is what the suite covers, and it must stay
+      # runnable without credentials. A test that needs a key belongs behind a
+      # skip, not in the default run.
+      - run: pytest -q
+
+  web:
+    name: typecheck (web)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      # `lib/types.ts` mirrors achilles/models.py by hand, so this catches the
+      # TypeScript half of a contract change but not a drift between the two.
+      - run: npm run typecheck
